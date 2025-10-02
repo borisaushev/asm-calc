@@ -51,4 +51,6 @@ void printBuf(FILE* output, ptr_array_buf* ptr_array);
  */
 void myPrintf(FILE* output, ptr_wrap_t ptr_wrap);
 
+long getFileSize(const char* filename);
+
 #endif //ONEGIN_LINEREADER_H

@@ -14,6 +14,12 @@ error_info_t validateStack(const stack_t* stack) {
     if (stack->array == NULL) {
         return {NULL_PTR, "null array"};
     }
+    if (stack->cnr1 == NULL) {
+        return {NULL_PTR, "null cnr1"};
+    }
+    if (stack->cnr2 == NULL) {
+        return {NULL_PTR, "null cnr2"};
+    }
 
     if (stack->capacity > MAX_REASONABLE_CAPACITY) {
         return {INVALID_CAPACITY, "stack size is too big"};
@@ -110,6 +116,23 @@ error_info_t stackDump(const stack_t *stack,
     return {SUCCESS};
 }
 
+error_info_t DPrintStack(stack_t* stack) {
+    assert(stack);
+
+    STACK_VALID(stack);
+
+    DPRINTF("---\n" "stack {\n");
+    for (size_t i = 0; i < stack->elementCount; i++) {
+        DPRINTF("\tel[%llu] = ", i);
+        DPRINTF(REG, stack->array[i]);
+        DPRINTF("\n");
+    }
+    DPRINTF("}\n");
+    fflush(stdout);
+
+    return {SUCCESS};
+}
+
 void initStack(stack_t* stack, size_t capacity) {
     assert(stack);
     DPRINTF("initializing stack\n");
@@ -127,8 +150,8 @@ void initStack(stack_t* stack, size_t capacity) {
         stack->array[i] = POISON;
     }
 
-    printf("after init: \n");
-    printStack(stack);
+    DPRINTF("after init: \n");
+    DPrintStack(stack);
 
     DPRINTF("stack init with poison values and canarrays\n");
 }
@@ -154,8 +177,8 @@ error_info_t stackPop(stack_t* stack, element_t* element) {
     DPRINTF("after pop: elcount: %llu; capacity: %llu\n", stack->elementCount, stack->capacity);
     *element = result;
 
-    printf("after pop: \n");
-    printStack(stack);
+    DPRINTF("after pop: \n");
+    DPrintStack(stack);
 
     return {SUCCESS};
 }
@@ -189,8 +212,8 @@ error_info_t stackPush(stack_t *stack, element_t element) {
 
     DPRINTF("after push: elcount: %llu; capacity: %llu\n", stack->elementCount, stack->capacity);
 
-    printf("after push: \n");
-    printStack(stack);
+    DPRINTF("after push: \n");
+    DPrintStack(stack);
 
     return {SUCCESS};
 }
@@ -205,9 +228,9 @@ error_info_t printStack(stack_t* stack) {
         printf("\tel[%llu] = ", i);
         printf(REG, stack->array[i]);
         printf("\n");
-        fflush(stdout);
     }
     printf("}\n");
+    fflush(stdout);
 
     return {SUCCESS};
 }

@@ -19,13 +19,29 @@ typedef enum errors {
     CONTENTS_MODIFIED,
     CANT_OPEN_FILE,
     FILE_NOT_FOUND,
-    FILE_NOT_READABLE
+    FILE_NOT_READABLE,
+    INVALID_INPUT
 } error_code_t;
 
 typedef struct error_info {
     error_code_t err_code;
     const char *msg;
 } error_info_t;
+
+typedef enum commands {
+    ADD = 1,
+    SUB,
+    DIV,
+    MUL,
+    OUT,
+    PUSH,
+    HLT,
+} command_t;
+
+const char* const ASM_SRC_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\source.asm";
+const char* const BYTECODE_PR_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\bytecode_pretty.txt";
+const char* const BYTECODE_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\bytecode.bbc";
+
 
 #define BEGIN do {
 #define END   } while (0);

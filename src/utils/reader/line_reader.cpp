@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-static long getFileSize(const char* filename) {
+long getFileSize(const char* filename) {
     struct stat st = {};
     if (stat(filename, &st) == 0) {
         return st.st_size;
