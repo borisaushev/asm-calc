@@ -20,8 +20,15 @@ error_info_t compile(pointer_array_buf_t* text) {
     size_t arrIndex = 0;
     char* line = strupr(text->pointer_arr[i].ptr);
     int* rough = (int*) calloc(text->lines_count * 2, sizeof(int));
+
+    fprintf(targetPr, "%s V: %d\n", SIGNATURA, VERSION);
+
     while (stricmp(line, "HLT") != 0 && i < text->lines_count) {
         DPRINTF("read line: '%s'\n", line);
+        if (line[0] == '\0') {
+            line = text->pointer_arr[++i].ptr;
+            continue;
+        }
         if (strncmp(line, "ADD", 3) == 0) {
             fprintf(targetPr, "%d\n", ADD);
             rough[arrIndex] = ADD;

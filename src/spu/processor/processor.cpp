@@ -3,11 +3,27 @@
 #include "line_reader.h"
 #include "stack.h"
 
+error_info_t verifySignature(FILE *file) {
+    char buf[10] = {};
+    if (fscanf(file, "%s", &buf) != 1 || strcmp(buf, SIGNATURA) != 0) {
+        return {INVALID_INPUT, "INVALID BYTE CODE SIGNATURE"};
+    }
+    int version = -1;
+    if (fscanf(file, " V: %d\n", &version) != 1 || version != VERSION) {
+        PRINTERR("INVALID VERSION: %d, expected %d", version, VERSION);
+        return {INVALID_INPUT, "INVALID BYTE CODE VERSION"};
+    }
+
+    return {SUCCESS};
+}
+
 error_info_t parseInts(const char* filename, int** ptr, int* count) {
     FILE* file = fopen(filename, "r");
     if (!file) {
         return {FILE_NOT_READABLE, "could not open file"};
     }
+
+    SAFE_CALL(verifySignature(file));
 
     *count = 0;
     int num;
@@ -40,7 +56,7 @@ error_info_t funcOfTwo(stack_t* stack, int (*func) (int a, int b), const char* c
     return {SUCCESS};
 }
 
-error_info_t runCmnds(stack_t* stack, int count, const int *commands) {
+error_info_t runCmnds(stack_t* stack, const int* commands, int count) {
     int i = 0;
     int curCmnd = -1;
     while (curCmnd != HLT && i < count) {
@@ -95,9 +111,9 @@ error_info_t runCmnds(stack_t* stack, int count, const int *commands) {
             }
         }
         i++;
-#ifdef DEBUG
-        getchar();
-#endif
+        #ifdef DEBUG
+            getchar();
+        #endif
     }
 
     printf("end of the run\n");

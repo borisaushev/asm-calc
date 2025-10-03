@@ -17,7 +17,7 @@ int main() {
         DPRINTF("\t%i\n", commands[i]);
     }
 
-    runCmnds(&stack, count, commands);
+    runCmnds(&stack, commands, count);
 
     free(commands);
     stackDestroy(&stack);

@@ -40,6 +40,8 @@ typedef enum commands {
     MUL,
     OUT,
     PUSH,
+    POPREG,
+    PUSHREG,
     HLT,
 } command_t;
 
@@ -47,6 +49,8 @@ const char* const ASM_SRC_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\fil
 const char* const BYTECODE_PR_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\bytecode_pretty.txt";
 const char* const BYTECODE_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\bytecode.bbc";
 
+const int VERSION = 1;
+const char* const SIGNATURA = "BB";
 
 #define BEGIN do {
 #define END   } while (0);
