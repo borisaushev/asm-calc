@@ -147,9 +147,6 @@ void initStack(stack_t* stack, size_t capacity) {
         stack->array[i] = POISON;
     }
 
-    DPRINTF("after init: \n");
-    DPrintStack(stack);
-
     DPRINTF("stack init with poison values and canarrays\n");
 }
 

@@ -10,7 +10,6 @@ error_info_t verifySignature(FILE *file) {
     }
     int version = -1;
     if (fscanf(file, " V: %d\n", &version) != 1 || version != VERSION) {
-        PRINTERR("INVALID VERSION: %d, expected %d", version, VERSION);
         return {INVALID_INPUT, "INVALID BYTE CODE VERSION"};
     }
 
@@ -59,7 +58,9 @@ error_info_t funcOfTwo(stack_t* stack, int (*func) (int a, int b), const char* c
 error_info_t runCmnds(stack_t* stack, const int* commands, int count) {
     int i = 0;
     int curCmnd = -1;
+    int line = 0;
     while (curCmnd != HLT && i < count) {
+        line++;
         curCmnd = commands[i];
         DPRINTF("current command: '%d'\n", curCmnd);
         switch (curCmnd) {
@@ -106,7 +107,7 @@ error_info_t runCmnds(stack_t* stack, const int* commands, int count) {
                 break;
             }
             default: {
-                PRINTERR("UNKNOWN COMMAND '%d'\n", curCmnd);
+                PRINTERR("UNKNOWN COMMAND '%d' at %s:%d\n", curCmnd, BYTECODE_PR_PATH, line + 1);
                 return {INVALID_INPUT, "unknown command"};
             }
         }

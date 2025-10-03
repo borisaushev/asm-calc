@@ -11,6 +11,11 @@ error_info_t openFiles(FILE *&targetPr, FILE *&targetStreamRough) {
     return {SUCCESS};
 }
 
+static void addCmnd(FILE *targetPr, size_t arrIndex, int* rough, command_t command) {
+    fprintf(targetPr, "%d\n", command);
+    rough[arrIndex] = command;
+}
+
 error_info_t compile(pointer_array_buf_t* text) {
     FILE *targetPr;
     FILE *targetStreamRough;
@@ -30,26 +35,21 @@ error_info_t compile(pointer_array_buf_t* text) {
             continue;
         }
         if (strncmp(line, "ADD", 3) == 0) {
-            fprintf(targetPr, "%d\n", ADD);
-            rough[arrIndex] = ADD;
+            addCmnd(targetPr, arrIndex, rough, ADD);
         }
         else if (strncmp(line, "SUB", 3) == 0) {
-            fprintf(targetPr, "%d\n", SUB);
-            rough[arrIndex] = SUB;
+            addCmnd(targetPr, arrIndex, rough, SUB);
         }
         else if (strncmp(line, "MUL", 3) == 0) {
-            fprintf(targetPr, "%d\n", MUL);
-            rough[arrIndex] = MUL;
+            addCmnd(targetPr, arrIndex, rough, MUL);
         }
         else if (strncmp(line, "DIV", 3) == 0) {
-            fprintf(targetPr, "%d\n", DIV);
-            rough[arrIndex] = DIV;
+            addCmnd(targetPr, arrIndex, rough, DIV);
         }
         else if (strncmp(line, "OUT", 3) == 0) {
-            fprintf(targetPr, "%d\n", OUT);
-            rough[arrIndex] = OUT;
+            addCmnd(targetPr, arrIndex, rough, OUT);
         }
-        else if (strncmp(line, "PUSH", 4) == 0) {
+        else if (strncmp(line, "PUSH ", 5) == 0) {
             int pushVal = POISON;
             int scanCount = sscanf(line, "PUSH %d", &pushVal);
             if (scanCount != 1) {
@@ -63,6 +63,12 @@ error_info_t compile(pointer_array_buf_t* text) {
 
             rough[arrIndex++] = PUSH;
             rough[arrIndex] = pushVal;
+        }
+        else if (strncmp(line, "PUSHREG ", 8) == 0) {
+            addCmnd(targetPr, arrIndex, rough, PUSHREG);
+        }
+        else if (strncmp(line, "POPREG ", 7) == 0) {
+            addCmnd(targetPr, arrIndex, rough, POPREG);
         }
         else {
             PRINTERR("invalid command at line %d\n", i);

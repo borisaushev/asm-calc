@@ -10,7 +10,6 @@
 #include <sys/stat.h>
 #include <filesystem>
 
-//TODO add versions and signature
 //TODO unite all in one structure
 //TODO add registers
 //TODO add verifier, init, dump and destruct for processor
@@ -49,7 +48,7 @@ const char* const ASM_SRC_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\fil
 const char* const BYTECODE_PR_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\bytecode_pretty.txt";
 const char* const BYTECODE_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\bytecode.bbc";
 
-const int VERSION = 1;
+const int VERSION = 2;
 const char* const SIGNATURA = "BB";
 
 #define BEGIN do {

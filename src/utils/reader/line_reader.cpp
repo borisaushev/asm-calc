@@ -1,6 +1,5 @@
 #include "line_reader.h"
 
-
 #include "common.h"
 
 long getFileSize(const char* filename) {

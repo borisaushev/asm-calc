@@ -4,6 +4,23 @@
 #include "common.h"
 #include "stack.h"
 
+typedef struct spuCmnds {
+    int** cmdArr;
+    int commandsCount;
+    int curI;
+} spuCmnds_t;
+
+typedef struct rgValues {
+    int** valArr;
+    int valCount;
+} rgValues_t;
+
+struct processor {
+    stack_t* stack;
+    spuCmnds_t* commands;
+    rgValues_t* rgValues;
+};
+
 error_info_t verifySignature(FILE *file);
 
 error_info_t parseInts(const char* filename, int** ptr, int* count);
