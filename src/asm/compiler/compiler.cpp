@@ -18,27 +18,27 @@ error_info_t compile(pointer_array_buf_t* text) {
 
     int i = 0;
     size_t arrIndex = 0;
-    char* line = text->pointer_arr[i].ptr;
-    int rough[1024] = {};
-    while (strcmp(line, "HLT") != 0 && i < text->lines_count) {
+    char* line = strupr(text->pointer_arr[i].ptr);
+    int* rough = (int*) calloc(text->lines_count * 2, sizeof(int));
+    while (stricmp(line, "HLT") != 0 && i < text->lines_count) {
         DPRINTF("read line: '%s'\n", line);
-        if (strcmp(line, "ADD") == 0) {
+        if (strncmp(line, "ADD", 3) == 0) {
             fprintf(targetPr, "%d\n", ADD);
             rough[arrIndex] = ADD;
         }
-        else if (strcmp(line, "SUB") == 0) {
+        else if (strncmp(line, "SUB", 3) == 0) {
             fprintf(targetPr, "%d\n", SUB);
             rough[arrIndex] = SUB;
         }
-        else if (strcmp(line, "MUL") == 0) {
+        else if (strncmp(line, "MUL", 3) == 0) {
             fprintf(targetPr, "%d\n", MUL);
             rough[arrIndex] = MUL;
         }
-        else if (strcmp(line, "DIV") == 0) {
+        else if (strncmp(line, "DIV", 3) == 0) {
             fprintf(targetPr, "%d\n", DIV);
             rough[arrIndex] = DIV;
         }
-        else if (strcmp(line, "OUT") == 0) {
+        else if (strncmp(line, "OUT", 3) == 0) {
             fprintf(targetPr, "%d\n", OUT);
             rough[arrIndex] = OUT;
         }
@@ -47,6 +47,7 @@ error_info_t compile(pointer_array_buf_t* text) {
             int scanCount = sscanf(line, "PUSH %d", &pushVal);
             if (scanCount != 1) {
                 PRINTERR("invalid push value at line %d\n", i);
+                free(rough);
                 return {INVALID_INPUT, "invalid push value"};
             }
             DPRINTF("pushVal: %d\n", pushVal);
@@ -58,6 +59,7 @@ error_info_t compile(pointer_array_buf_t* text) {
         }
         else {
             PRINTERR("invalid command at line %d\n", i);
+            free(rough);
             return {INVALID_INPUT, "invalid command"};
         }
 
@@ -66,14 +68,18 @@ error_info_t compile(pointer_array_buf_t* text) {
     }
     if (strcmp(line, "HLT") != 0) {
         PRINTERR("PROGRAMM IS NOT FINITE, POSSIBLE TIME CURVATURE OF SPACE AND TIME\n");
+        free(rough);
         return {INVALID_INPUT, "PROGRAMM IS NOT FINITE"};
     }
 
     fprintf(targetPr, "%d\n", HLT);
     DPRINTF("the compiler meets its destiny\n");
-    DPRINTF("result byte code: \n'%s'\n", pretty);
 
     fwrite(rough, sizeof(int), arrIndex, targetStreamRough);
+
+    free(rough);
+    fclose(targetPr);
+    fclose(targetStreamRough);
 
     return {SUCCESS};
 }

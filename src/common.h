@@ -10,6 +10,11 @@
 #include <sys/stat.h>
 #include <filesystem>
 
+//TODO add versions and signature
+//TODO unite all in one structure
+//TODO add registers
+//TODO add verifier, init, dump and destruct for processor
+
 typedef enum errors {
     SUCCESS = 0,
     NULL_PTR,

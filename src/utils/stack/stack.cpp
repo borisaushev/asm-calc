@@ -6,8 +6,6 @@
 #include "common.h"
 
 error_info_t validateStack(const stack_t* stack) {
-    DPRINTF("=== STACK VALIDATION STARTED ===\n");
-
     if (stack == NULL) {
         return {NULL_PTR, "null stack"};
     }
@@ -37,7 +35,6 @@ error_info_t validateStack(const stack_t* stack) {
         return {CONTENTS_MODIFIED, "second canarray is modified"};
     }
 
-    DPRINTF("=== STACK VALIDATION PASSED ===\n");
     return {SUCCESS};
 }
 
@@ -74,7 +71,7 @@ error_info_t stackDump(const stack_t *stack,
                        const char *function,
                        error_info_t validation) {
 
-    FILE* dump_file = fopen(LOG_FILE, "a");
+    static FILE* dump_file = fopen(LOG_FILE, "w");
     if (dump_file == NULL) {
         // Если не удалось открыть файл, пишем только в консоль
         DPRINTF("StackDump() {\n");
@@ -158,7 +155,6 @@ void initStack(stack_t* stack, size_t capacity) {
 
 error_info_t stackPop(stack_t* stack, element_t* element) {
     assert(stack);
-    DPRINTF("---\nbefore pop: elcount: %llu; capacity: %llu\n", stack->elementCount, stack->capacity);
 
     STACK_VALID(stack);
 
@@ -174,10 +170,10 @@ error_info_t stackPop(stack_t* stack, element_t* element) {
 
     STACK_VALID(stack);
 
-    DPRINTF("after pop: elcount: %llu; capacity: %llu\n", stack->elementCount, stack->capacity);
     *element = result;
 
     DPRINTF("after pop: \n");
+    DPRINTF("elcount: %llu; capacity: %llu\n", stack->elementCount, stack->capacity);
     DPrintStack(stack);
 
     return {SUCCESS};
@@ -185,7 +181,6 @@ error_info_t stackPop(stack_t* stack, element_t* element) {
 
 error_info_t stackPush(stack_t *stack, element_t element) {
     assert(stack);
-    DPRINTF("---\nbefore push: elcount: %llu; capacity: %llu\n", stack->elementCount, stack->capacity);
 
     STACK_VALID(stack);
 
@@ -210,9 +205,9 @@ error_info_t stackPush(stack_t *stack, element_t element) {
 
     STACK_VALID(stack);
 
-    DPRINTF("after push: elcount: %llu; capacity: %llu\n", stack->elementCount, stack->capacity);
 
     DPRINTF("after push: \n");
+    DPRINTF("elcount: %llu; capacity: %llu\n", stack->elementCount, stack->capacity);
     DPrintStack(stack);
 
     return {SUCCESS};
@@ -240,5 +235,3 @@ void stackDestroy(stack_t* stack) {
     assert(stack->cnr1);
     free(stack->cnr1);
 }
-
-

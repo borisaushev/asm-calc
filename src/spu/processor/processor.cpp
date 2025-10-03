@@ -95,6 +95,9 @@ error_info_t runCmnds(stack_t* stack, int count, const int *commands) {
             }
         }
         i++;
+#ifdef DEBUG
+        getchar();
+#endif
     }
 
     printf("end of the run\n");

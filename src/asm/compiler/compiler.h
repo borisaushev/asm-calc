@@ -4,8 +4,8 @@
 #include <stdlib.h>
 
 #include "common.h"
-#include "utils/reader/line_reader.h"
-#include "utils/stack/stack.h"
+#include "line_reader.h"
+#include "stack.h"
 
 error_info_t openFiles(FILE *&targetPr, FILE *&targetStreamRough);
 
