@@ -3,6 +3,7 @@
 #include "common.h"
 
 long getFileSize(const char* filename) {
+    assert(filename);
     struct stat st = {};
     if (stat(filename, &st) == 0) {
         return st.st_size;
@@ -13,6 +14,10 @@ long getFileSize(const char* filename) {
 }
 
 static void parsePointers(char *text, int ptr_count, ptr_wrap_t** ptr_array) {
+    assert(text);
+    assert(ptr_array);
+    assert(*ptr_array);
+
     char* curptr = &text[0];
     char* nextLine = strchr(curptr, '\n');
     for (int i = 0; i < ptr_count; i++) {
@@ -27,6 +32,10 @@ static void parsePointers(char *text, int ptr_count, ptr_wrap_t** ptr_array) {
 }
 
 static error_info_t readFile(const char *file_path, char** text, int* bytes_read) {
+    assert(text);
+    assert(file_path);
+    assert(bytes_read);
+
     int stream = open(file_path, O_RDONLY);
 
     int file_size = getFileSize(file_path);
@@ -54,6 +63,9 @@ static error_info_t readFile(const char *file_path, char** text, int* bytes_read
 }
 
 static void countLines(const char *text, int bytes_read, int* ptr_count) {
+    assert(text);
+    assert(ptr_count);
+
     for (int i = 0; i < bytes_read+1; i++) {
         if (text[i] == '\n') {
             (*ptr_count)++;
@@ -63,6 +75,7 @@ static void countLines(const char *text, int bytes_read, int* ptr_count) {
 
 error_info_t parseText(const char *file_path, pointer_array_buf_t *arr_ptr) {
     assert(file_path);
+    assert(arr_ptr);
 
     char *text = NULL;
     int bytes_read = -1;
@@ -85,8 +98,15 @@ error_info_t parseText(const char *file_path, pointer_array_buf_t *arr_ptr) {
 }
 
 void printPtrArray(FILE* output, ptr_array_buf* ptr_array) {
+    assert(ptr_array);
+    assert(ptr_array->pointer_arr);
+    assert(output);
+
     DPRINTF("PRINTING POINTER ARRAY\n");
     for (int i = 0; i < ptr_array->lines_count; i++) {
+        DPRINTF("line %d: ", i);
         fprintf(output, "%s\n", ptr_array->pointer_arr[i].ptr);
     }
+
+    fflush(output);
 }

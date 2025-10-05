@@ -6,6 +6,7 @@
 #include "common.h"
 
 error_info_t validateStack(const stack_t* stack) {
+    assert(stack);
     if (stack == NULL) {
         return {NULL_PTR, "null stack"};
     }
@@ -39,6 +40,9 @@ error_info_t validateStack(const stack_t* stack) {
 }
 
 static void dumpData(FILE* output, const stack_t *stack) {
+    assert(stack);
+    assert(output);
+
     fprintf(output, "\t\t\tcnr1: ptr: '%p' val: '%c' or '%d'; cnr2: ptr: '%p' val: '%c' or '%d'\n",
         stack->cnr1, *stack->cnr1, *stack->cnr1, stack->cnr2, *stack->cnr2, *stack->cnr2);
     fprintf(output, "\t\t\tcapacity: %llu\n", stack->capacity);
@@ -70,44 +74,45 @@ error_info_t stackDump(const stack_t *stack,
                        int line,
                        const char *function,
                        error_info_t validation) {
-
-    static FILE* dump_file = fopen(LOG_FILE, "w");
-    if (dump_file == NULL) {
-        // Если не удалось открыть файл, пишем только в консоль
-        DPRINTF("StackDump() {\n");
-        DPRINTF("\tCannot open dump file!\n");
+    static FILE* dumpFile = NULL;
+    if (dumpFile == NULL) {
+        dumpFile = fopen(STACK_LOG_FILE, "wa");
+    }
+    if (dumpFile == NULL) {
+        // DPRINTF("StackDump() {\n");
+        // DPRINTF("\tCannot open dump file!\n");
 
         return {CANT_OPEN_FILE, "dump file not found"};
     }
 
-    fprintf(dump_file, "StackDump() {\n");
+    fprintf(dumpFile, "StackDump() {\n");
 
     if (stack == NULL) {
-        fprintf(dump_file, "\tStack [NULL] { ERROR! NULL POINTER\n\t}\n}\n");
-        fclose(dump_file);
+        fprintf(dumpFile, "\tStack [NULL] { ERROR! NULL POINTER\n\t}\n}\n");
+        fclose(dumpFile);
         return {NULL_PTR, "null pointer in dump"};
     }
 
     const char *status = (validation.err_code == SUCCESS) ? "" : "  ERROR! ";
     const char *error_msg = (validation.err_code != SUCCESS) ? validation.msg : "";
 
-    fprintf(dump_file, "\t%s  [%p] {%s%s  \n\t\t\tfrom %s() at %s:%d\n",
-            "stack", (void*)stack, status, error_msg, function, file, line);
+    fprintf(dumpFile, "\t%s  [%p] {%s%s  \n\t\t\tfrom %s() at %s:%d\n",
+            "stack", stack, status, error_msg, function, file, line);
 
-    fprintf(dump_file, "\t\telements count = %zu", stack->elementCount);
+    fprintf(dumpFile, "\t\telements count = %zu", stack->elementCount);
 
     if (stack->elementCount > stack->capacity) {
-        fprintf(dump_file, " (SIZE EXCEEDS CAPACITY!)");
+        fprintf(dumpFile, " (SIZE EXCEEDS CAPACITY!)");
     }
-    fprintf(dump_file, ";\n");
+    fprintf(dumpFile, ";\n");
 
-    fprintf(dump_file, "\t\tdata[%p] {\n", (void*)stack->array);
+    fprintf(dumpFile, "\t\tdata[%p] {\n", (void*)stack->array);
 
-    dumpData(dump_file, stack);
+    dumpData(dumpFile, stack);
 
-    fprintf(dump_file, "\t\t}\n\t}\n}\n");
+    fprintf(dumpFile, "\t\t}\n\t}\n}\n");
 
-    fclose(dump_file);
+    fclose(dumpFile);
 
 
     return {SUCCESS};
@@ -136,9 +141,9 @@ void initStack(stack_t* stack, size_t capacity) {
     stack->capacity = capacity;
     stack->elementCount = 0;
 
-    char* mem = (char*) calloc(2 + sizeof(element_t)*capacity, sizeof(char)); //защита канарейкой
-    stack->cnr1 = mem;
-    stack->cnr2 = mem + (stack->capacity + 1)*sizeof(element_t);
+    stack->cnr1 = (char*) calloc(2 + sizeof(element_t)*capacity, sizeof(char)); //защита канарейкой
+    char* mem = stack->cnr1;
+    stack->cnr2 = mem + (stack->capacity)*sizeof(element_t) + 1;
 
     *(stack->cnr1) = CANARRAY;
     *(stack->cnr2) = CANARRAY;
@@ -152,6 +157,7 @@ void initStack(stack_t* stack, size_t capacity) {
 
 error_info_t stackPop(stack_t* stack, element_t* element) {
     assert(stack);
+    assert(element);
 
     STACK_VALID(stack);
 
@@ -169,9 +175,9 @@ error_info_t stackPop(stack_t* stack, element_t* element) {
 
     *element = result;
 
-    DPRINTF("after pop: \n");
-    DPRINTF("elcount: %llu; capacity: %llu\n", stack->elementCount, stack->capacity);
-    DPrintStack(stack);
+    // DPRINTF("after pop: \n");
+    // DPRINTF("elcount: %llu; capacity: %llu\n", stack->elementCount, stack->capacity);
+    // DPrintStack(stack);
 
     return {SUCCESS};
 }
@@ -185,8 +191,8 @@ error_info_t stackPush(stack_t *stack, element_t element) {
         size_t newCapacity = stack->capacity * 2; //защита канарейкой
         DPRINTF("stack full, reallocating to size: %llu\n", newCapacity);
         stack->capacity = newCapacity;
-        char* mem = (char*) realloc(stack->cnr1, 2 + sizeof(element_t)*newCapacity); //защита канарейкой
-        stack->cnr1 = mem;
+        stack->cnr1 = (char*) realloc(stack->cnr1, 2 + sizeof(element_t)*newCapacity); //защита канарейкой
+        char* mem = stack->cnr1;
         stack->cnr2 = mem + (newCapacity + 1)*sizeof(element_t);
 
         *(stack->cnr1) = CANARRAY;
@@ -203,32 +209,41 @@ error_info_t stackPush(stack_t *stack, element_t element) {
     STACK_VALID(stack);
 
 
-    DPRINTF("after push: \n");
-    DPRINTF("elcount: %llu; capacity: %llu\n", stack->elementCount, stack->capacity);
-    DPrintStack(stack);
+    // DPRINTF("after push: \n");
+    // DPRINTF("elcount: %llu; capacity: %llu\n", stack->elementCount, stack->capacity);
+    // DPrintStack(stack);
 
     return {SUCCESS};
 }
 
 error_info_t printStack(stack_t* stack) {
-    assert(stack);
-
-    STACK_VALID(stack);
-
-    printf("---\n" "stack {\n");
-    for (size_t i = 0; i < stack->elementCount; i++) {
-        printf("\tel[%llu] = ", i);
-        printf(REG, stack->array[i]);
-        printf("\n");
-    }
-    printf("}\n");
-    fflush(stdout);
+    SAFE_CALL(fprintStack(stdout, stack));
 
     return {SUCCESS};
 }
 
-void stackDestroy(stack_t* stack) {
+error_info_t fprintStack(FILE* file, stack_t* stack) {
+    assert(stack);
+
+    STACK_VALID(stack);
+
+    fprintf(file, "---\n" "stack {\n");
+    for (size_t i = 0; i < stack->elementCount; i++) {
+        fprintf(file, "\tel[%llu] = ", i);
+        fprintf(file, REG, stack->array[i]);
+        fprintf(file, "\n");
+    }
+    fprintf(file, "}\n");
+    fflush(file);
+
+    return {SUCCESS};
+}
+
+error_info_t stackDestroy(stack_t* stack) {
     assert(stack);
     assert(stack->cnr1);
+    STACK_VALID(stack);
     free(stack->cnr1);
+
+    return {SUCCESS};
 }
