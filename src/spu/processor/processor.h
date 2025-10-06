@@ -3,7 +3,7 @@
 
 #include "common.h"
 #include "stack.h"
-#include "struct/processor_str.h"
+#include "struct/processorStruct.h"
 
 error_info_t verifySignature(FILE *file);
 

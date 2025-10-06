@@ -2,7 +2,7 @@
 
 #include "line_reader.h"
 #include "stack.h"
-#include "struct/processor_str.h"
+#include "struct/processorStruct.h"
 
 //TODO mb fix lambdas and replace with defines
 error_info_t verifySignature(FILE *file) {
@@ -140,6 +140,31 @@ error_info_t runCmnds(processor_t* processor) {
 
                 SAFE_CALL(stackPop(processor->stack, &(processor->registerArr[reg])));
                 printf("POPREG: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
+                break;
+            }
+            case CP: {
+                int reg = processor->commands[++processor->curI];
+                if (reg >= REGISTER_SIZE || reg < 0) {
+                    RETURN_ERR(INVALID_INPUT, "reg value out of range");
+                }
+
+                processor->registerArr[reg] = (int) processor->curI;
+                printf("CP: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
+                break;
+            }
+            case JMP: {
+                int reg = processor->commands[++processor->curI];
+                if (reg >= REGISTER_SIZE || reg < 0) {
+                    RETURN_ERR(INVALID_INPUT, "reg value out of range");
+                }
+
+                int jmpIndex = processor->registerArr[reg];
+                if (jmpIndex < 0 || jmpIndex >= (int) processor->commandsCount) {
+                    RETURN_ERR(INVALID_INPUT, "jmp index out of range");
+                }
+
+                processor->curI = (size_t) jmpIndex;
+                printf("JMP: reg: %d, val: %d\n", reg, jmpIndex);
                 break;
             }
             case HLT: {

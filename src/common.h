@@ -41,6 +41,8 @@ typedef enum commands {
     PUSH,
     POPREG,
     PUSHREG,
+    CP, // set given reg to next command (CP AX)
+    JMP, // jump to given reg (JMP AX)
     HLT,
 } command_t;
 
@@ -49,7 +51,7 @@ const char* const ASM_SRC_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\fil
 const char* const BYTECODE_PR_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\bytecode_pretty.txt";
 const char* const BYTECODE_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\bytecode.bbc";
 
-const int VERSION = 5;
+const int VERSION = 7;
 const char* const SIGNATURA = "BB";
 const int REGISTER_SIZE = 10;
 

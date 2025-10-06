@@ -1,3 +1,10 @@
+PUSH 1 ; testing check-points
+OUT
+CP AX
+PUSH 10
+OUT
+JMP AX
+
 PUSH 1
 POPREG AX
 PUSH -5

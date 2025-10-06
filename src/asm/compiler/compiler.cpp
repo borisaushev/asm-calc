@@ -16,15 +16,23 @@ static void addCmnd(FILE *targetPr, size_t arrIndex, int* rough, command_t comma
     rough[arrIndex] = command;
 }
 
-static error_info_t modifyReg(FILE *targetPr, size_t &arrIndex, int* rough, int i, char *line, command_t command) {
-    char regVal = 0;
+static error_info_t getRegVal(int i, char *line, char* regVal) {
     char cmnd[50];
-    int scanCount = sscanf(line, "%s %cX", cmnd, &regVal);
+    int scanCount = sscanf(line, "%s %cX", cmnd, regVal);
     if (scanCount != 2) {
         PRINTERR("invalid register value at line %d\n", i);
         RETURN_ERR(INVALID_INPUT, "invalid register value");
     }
+    DPRINTF("comand: %s\n", cmnd);
+
+    return {SUCCESS};
+}
+
+static error_info_t modifyReg(FILE *targetPr, size_t &arrIndex, int* rough, int i, char *line, command_t command) {
+    char regVal = 0;
+    SAFE_CALL(getRegVal(i, line, &regVal));
     const int regInt = regVal - 'A';
+
     DPRINTF("regVal: %c\n", regVal);
     DPRINTF("regInt: %d\n", regInt);
     if (!isalpha(regVal) || regInt >= REGISTER_SIZE || regInt < 0) {
@@ -101,6 +109,12 @@ error_info_t compile(pointer_array_buf_t* text) {
         }
         else if (strcmp(cmnd, "POPREG") == 0) {
             SAFE_CALL(modifyReg(targetPr, arrIndex, rough, i, line, POPREG));
+        }
+        else if (strcmp(cmnd, "CP") == 0) {
+            SAFE_CALL(modifyReg(targetPr, arrIndex, rough, i, line, CP));
+        }
+        else if (strcmp(cmnd, "JMP") == 0) {
+            SAFE_CALL(modifyReg(targetPr, arrIndex, rough, i, line, JMP));
         }
         else if (strcmp(cmnd, "HLT") == 0) {
             break;
