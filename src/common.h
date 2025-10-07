@@ -2,7 +2,6 @@
 #define COMMON_H
 
 #include <stdio.h>
-#include <fcntl.h>
 #include <io.h>
 #include <math.h>
 #include <cassert>
@@ -11,6 +10,7 @@
 #include <filesystem>
 
 //TODO сделать отдельные enum-ы для разных мест
+//TODO добавить вывод строки где был дамп процессора
 
 typedef enum errors {
     SUCCESS = 0,
@@ -32,26 +32,36 @@ typedef struct error_info {
     const char* file;
 } error_info_t;
 
+//TODO написать квадратку с разбором всех случаев (для a!=0, для a=1 выводим -1) вначале печатает кол-во корней потом если есть, то корни
+// Потом будем решать все виды
 typedef enum commands {
     ADD = 1,
     SUB,
     DIV,
     MUL,
+    SQRT,
     OUT,
+    IN,
     PUSH,
     POPREG,
     PUSHREG,
     CP, // set given reg to next command (CP AX)
     JMP, // jump to given reg (JMP AX)
+    JB,
+    JBE,
+    JA,
+    JAE,
+    JE,
+    JNE,
     HLT,
 } command_t;
 
-//use relative path
-const char* const ASM_SRC_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\source.asm";
-const char* const BYTECODE_PR_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\bytecode_pretty.txt";
-const char* const BYTECODE_PATH = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\bytecode.bbc";
+// const char* const ASM_SRC_PATH = "..\\files\\examples\\JNE.asm";
+const char* const ASM_SRC_PATH = "..\\files\\source.asm";
+const char* const BYTECODE_PR_PATH = "..\\files\\bytecode_pretty.txt";
+const char* const BYTECODE_PATH = "..\\files\\bytecode.bbc";
 
-const int VERSION = 7;
+const int VERSION = 11;
 const char* const SIGNATURA = "BB";
 const int REGISTER_SIZE = 10;
 
@@ -74,23 +84,28 @@ const int MAX_COMMANDS = 1024;
 #endif //DEBUG
 
 //define for printing in stderr
-#define PRINTERR(...) fprintf(stderr, __VA_ARGS__)
+#define PRINTERR(...) \
+    BEGIN \
+        fprintf(stderr, "\033[31m"); \
+        fprintf(stderr, __VA_ARGS__); \
+        fprintf(stderr, "\033[0m"); \
+    END
+
+#define RETURN_ERR(code, desc) \
+    BEGIN \
+        PRINTERR("ERROR: %s\n", desc); \
+        return {code, desc, __LINE__, __FILE__}; \
+    END
 
 #define SAFE_CALL(func) \
     BEGIN \
         error_info_t sf_call ## __LINE__ = (func); \
         if (sf_call ## __LINE__.err_code != SUCCESS) { \
-            PRINTERR("ERROR [%s:%d]: %s (code %d)\n", \
-            sf_call ## __LINE__.file, sf_call ## __LINE__.line, sf_call ## __LINE__.msg, sf_call ## __LINE__.err_code); \
             return sf_call ## __LINE__; \
         } \
     END
 #endif //COMMON_H
 
-#define RETURN_ERR(code, desc) \
-    BEGIN \
-        return {code, desc, __LINE__, __FILE__}; \
-    END
 
 #define FREE_ALL(...) \
     BEGIN \
@@ -105,7 +120,7 @@ const int MAX_COMMANDS = 1024;
     BEGIN \
     error_info_t callResult = (func); \
     if(callResult.err_code != SUCCESS) { \
-        PRINTERR("ERROR [%s:%d]: %s (code %d)\n", callResult.file, callResult.line, callResult.msg, callResult.err_code); \
+        DPRINTF("ERROR [%s:%d]: %s (code %d)\n", callResult.file, callResult.line, callResult.msg, callResult.err_code); \
         FREE_ALL(__VA_ARGS__); \
         return callResult.err_code; \
     } \

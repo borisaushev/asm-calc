@@ -3,7 +3,6 @@
 #include "processor.h"
 
 
-
 error_info_t initProcessor(processor_t* processor, stack_t* stack, int commands[MAX_COMMANDS], size_t commandsCount) {
     assert(processor);
     assert(commands);
@@ -29,21 +28,17 @@ error_info_t initProcessor(processor_t* processor, stack_t* stack, int commands[
 error_info_t verifyProcessor(processor_t* processor) {
     assert(processor);
 
+    dumpProcessor(processor);
     if (processor->stack == NULL) {
         RETURN_ERR(NULL_PTR, "stack ptr is null");
     }
     STACK_VALID(processor->stack);
 
-    for (int i = 0; i < MAX_COMMANDS; i++) {
-        if (processor->commands[i] < 0 || processor->commands[i] > MAX_COMMANDS) {
-            RETURN_ERR(NULL_PTR, "command index out of range");
-        }
-    }
-    if (processor->curI > MAX_COMMANDS) {
-        RETURN_ERR(NULL_PTR, "command index out of range");
-    }
     if (processor->commandsCount > MAX_COMMANDS) {
         RETURN_ERR(NULL_PTR, "reasonable commands count exceeded");
+    }
+    if (processor->curI > MAX_COMMANDS) {
+        RETURN_ERR(NULL_PTR, "current command index out of range");
     }
 
     return {SUCCESS};
@@ -65,10 +60,15 @@ void printProcessor(processor_t *processor, FILE* dumpFile) {
     fprintf(dumpFile, "\n");
 
     fprintf(dumpFile, "register arr: ");
+    int count = 0;
     for (int i = 0; i < REGISTER_SIZE; i++) {
         if (processor->registerArr[i] != POISON) {
             fprintf(dumpFile, "[%i]: %d, ", i, processor->registerArr[i]);
+            count++;
         }
+    }
+    if (count == 0) {
+        fprintf(dumpFile, "[empty]");
     }
     fprintf(dumpFile, "\n");
 
@@ -94,10 +94,15 @@ void DPrintProcessor(processor_t *processor) {
     DPRINTF("]\n");
 
     DPRINTF("register arr: ");
+    int count = 0;
     for (int i = 0; i < REGISTER_SIZE; i++) {
         if (processor->registerArr[i] != POISON) {
-            DPRINTF("[%i]: %d,  ", i, processor->registerArr[i]);
+            DPRINTF("[%i]: %d, ", i, processor->registerArr[i]);
+            count++;
         }
+    }
+    if (count == 0) {
+        DPRINTF("[empty]");
     }
     DPRINTF("\n");
 
@@ -107,7 +112,6 @@ void DPrintProcessor(processor_t *processor) {
 
 void dumpProcessor(processor_t* processor) {
     assert(processor);
-
     static FILE* dumpFile = NULL;
     if (dumpFile == NULL) {
         dumpFile = fopen(PROC_LOG_FILE, "w");

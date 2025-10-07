@@ -21,4 +21,14 @@ void destroyProcessor(processor_t* processor);
 
 void printProcessor(processor_t *processor, FILE* dumpFile);
 
+#define PROCESSOR_VALID(processor) \
+    BEGIN \
+    error_info_t valid ## __LINE__ = verifyProcessor(processor); \
+    if (valid ## __LINE__.err_code != SUCCESS) { \
+        SAFE_CALL(dumpProcessor(stack, __FILE__, __LINE__, __func__, valid ## __LINE__)); \
+        return valid ## __LINE__;\
+    } \
+    END
+
+
 #endif //SRC_UTILS_STACK_PROCESSOR_STR_H

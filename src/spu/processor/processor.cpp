@@ -57,9 +57,25 @@ error_info_t funcOfTwo(stack_t* stack, int (*func) (int a, int b), const char* c
     }
 
     int val = func(v1, v2);
-    printf("%s", funcName);
-    printf(": %d\n", val);
+    DPRINTF("%s", funcName);
+    DPRINTF(": %d\n", val);
     SAFE_CALL(stackPush(stack, val));
+
+    return {SUCCESS};
+}
+
+error_info_t getJmpIndexAndVals(processor_t *processor, int* index, int* v1, int* v2) {
+    *index = processor->commands[++processor->curI] - 1;
+    if (*index < 0 || (size_t) *index >= processor->commandsCount ) {
+        RETURN_ERR(INVALID_INPUT, "index out of range");
+    }
+
+    *v1 = -1;
+    *v2 = -1;
+    SAFE_CALL(stackPop(processor->stack, v1));
+    SAFE_CALL(stackPop(processor->stack, v2));
+
+    DPRINTF("parsed jmp index: %d, v1: %d, v2: %d\n", *index, *v1, *v2)
 
     return {SUCCESS};
 }
@@ -67,18 +83,14 @@ error_info_t funcOfTwo(stack_t* stack, int (*func) (int a, int b), const char* c
 error_info_t runCmnds(processor_t* processor) {
     assert(processor);
     assert(processor->stack);
-    verifyProcessor(processor);
+
+    DPrintProcessor(processor);
+    SAFE_CALL(verifyProcessor(processor));
 
     int curCmnd = -1;
     int line = 1;
     for (; curCmnd != HLT && processor->curI < MAX_COMMANDS && processor->curI < processor->commandsCount; (processor->curI)++, line++) {
-
         curCmnd = processor->commands[processor->curI];
-
-        #ifdef DEBUG
-            dumpProcessor(processor);
-            DPrintProcessor(processor);
-        #endif
 
         switch (curCmnd) {
             case ADD: {
@@ -102,7 +114,20 @@ error_info_t runCmnds(processor_t* processor) {
                 if (v1 == 0) {
                     RETURN_ERR(INVALID_INPUT, "division by zero");
                 }
-                printf("DIV: %d\n", val);
+                DPRINTF("DIV: %d\n", val);
+                SAFE_CALL(stackPush(processor->stack, val));
+                break;
+            }
+            case SQRT: {
+                int v1 = POISON;
+                SAFE_CALL(stackPop(processor->stack, &v1));
+
+                if (v1 < 0) {
+                    RETURN_ERR(INVALID_INPUT, "negative number passed to sqrt");
+                }
+                int val = (int) sqrt(v1);
+
+                DPRINTF("SQRT: %d\n", val);
                 SAFE_CALL(stackPush(processor->stack, val));
                 break;
             }
@@ -117,7 +142,19 @@ error_info_t runCmnds(processor_t* processor) {
                 int v = processor->commands[++processor->curI];
                 SAFE_CALL(stackPush(processor->stack, v));
 
-                printf("PUSH: %d\n", v);
+                DPRINTF("PUSH: %d\n", v);
+                break;
+            }
+            case IN: {
+                printf("input val: ");
+                int inp = POISON;
+                if (scanf("%d", &inp) != 1) {
+                    RETURN_ERR(INVALID_INPUT, "invalid input");
+                }
+                printf("\n");
+
+                DPRINTF("INPUT: %d\n", inp);
+                SAFE_CALL(stackPush(processor->stack, inp));
                 break;
             }
             case PUSHREG: {
@@ -129,7 +166,7 @@ error_info_t runCmnds(processor_t* processor) {
                     RETURN_ERR(INVALID_INPUT, "register is not initialized");
                 }
                 SAFE_CALL(stackPush(processor->stack, processor->registerArr[reg]));
-                printf("PUSHREG: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
+                DPRINTF("PUSHREG: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
                 break;
             }
             case POPREG: {
@@ -139,7 +176,7 @@ error_info_t runCmnds(processor_t* processor) {
                 }
 
                 SAFE_CALL(stackPop(processor->stack, &(processor->registerArr[reg])));
-                printf("POPREG: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
+                DPRINTF("POPREG: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
                 break;
             }
             case CP: {
@@ -149,7 +186,7 @@ error_info_t runCmnds(processor_t* processor) {
                 }
 
                 processor->registerArr[reg] = (int) processor->curI;
-                printf("CP: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
+                DPRINTF("CP: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
                 break;
             }
             case JMP: {
@@ -164,7 +201,73 @@ error_info_t runCmnds(processor_t* processor) {
                 }
 
                 processor->curI = (size_t) jmpIndex;
-                printf("JMP: reg: %d, val: %d\n", reg, jmpIndex);
+                DPRINTF("JMP: reg: %d, val: %d\n", reg, jmpIndex);
+                break;
+            }
+            case JB: {
+                int index = -1, v1 = -1, v2 = -1;
+                SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
+
+                if (v2 < v1) {
+                    DPRINTF("Jump form: %llu, to %d\n", processor->curI, index);
+                    processor->curI = (size_t) index;
+                }
+                DPRINTF("JB: index: %d, v1: %d, v2: %d\n", index, v1, v2);
+                break;
+            }
+            case JBE: {
+                int index = -1, v1 = -1, v2 = -1;
+                SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
+
+                if (v2 <= v1) {
+                    DPRINTF("Jump form: %llu, to %d\n", processor->curI, index);
+                    processor->curI = (size_t) index;
+                }
+                DPRINTF("JBE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
+                break;
+            }
+            case JA: {
+                int index = -1, v1 = -1, v2 = -1;
+                SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
+
+                if (v2 > v1) {
+                    DPRINTF("Jump form: %llu, to %d\n", processor->curI, index);
+                    processor->curI = (size_t) index;
+                }
+                DPRINTF("JA: index: %d, v1: %d, v2: %d\n", index, v1, v2);
+                break;
+            }
+            case JAE: {
+                int index = -1, v1 = -1, v2 = -1;
+                SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
+
+                if (v2 >= v1) {
+                    DPRINTF("Jump form: %llu, to %d\n", processor->curI, index);
+                    processor->curI = (size_t) index;
+                }
+                DPRINTF("JAE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
+                break;
+            }
+            case JE: {
+                int index = -1, v1 = -1, v2 = -1;
+                SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
+
+                if (v2 == v1) {
+                    DPRINTF("Jump form: %llu, to %d\n", processor->curI, index);
+                    processor->curI = (size_t) index;
+                }
+                DPRINTF("JE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
+                break;
+            }
+            case JNE: {
+                int index = -1, v1 = -1, v2 = -1;
+                SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
+
+                if (v2 != v1) {
+                    DPRINTF("Jump form: %llu, to %d\n", processor->curI, index);
+                    processor->curI = (size_t) index;
+                }
+                DPRINTF("JNE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
                 break;
             }
             case HLT: {
@@ -177,6 +280,9 @@ error_info_t runCmnds(processor_t* processor) {
         }
 
         #ifdef DEBUG
+            dumpProcessor(processor);
+            SAFE_CALL(verifyProcessor(processor));
+            DPrintProcessor(processor);
             getchar();
         #endif
     }

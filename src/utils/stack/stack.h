@@ -14,8 +14,11 @@ typedef struct stack {
     element_t* array;
     size_t capacity;
     size_t elementCount;
-    char* cnr1;
-    char* cnr2;
+#ifdef ENABLE_PRT
+    element_t* cnr1;
+    element_t* cnr2;
+    size_t hash;
+#endif
 } stack_t;
 
 

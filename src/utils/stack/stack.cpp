@@ -6,18 +6,13 @@
 #include "common.h"
 
 error_info_t validateStack(const stack_t* stack) {
-    assert(stack);
+    // DPRINTF("=== STACK VALIDATION STARTED ===\n");
+
     if (stack == NULL) {
         return {NULL_PTR, "null stack"};
     }
     if (stack->array == NULL) {
         return {NULL_PTR, "null array"};
-    }
-    if (stack->cnr1 == NULL) {
-        return {NULL_PTR, "null cnr1"};
-    }
-    if (stack->cnr2 == NULL) {
-        return {NULL_PTR, "null cnr2"};
     }
 
     if (stack->capacity > MAX_REASONABLE_CAPACITY) {
@@ -29,13 +24,16 @@ error_info_t validateStack(const stack_t* stack) {
         return {INVALID_INDEX, "index too big"};
     }
 
+#ifdef ENABLE_PRT
     if (*(stack->cnr1) != CANARRAY) {
         return {CONTENTS_MODIFIED, "first canarray is modified"};
     }
     if (*(stack->cnr2) != CANARRAY) {
         return {CONTENTS_MODIFIED, "second canarray is modified"};
     }
+#endif
 
+    // DPRINTF("=== STACK VALIDATION PASSED ===\n");
     return {SUCCESS};
 }
 
@@ -43,8 +41,11 @@ static void dumpData(FILE* output, const stack_t *stack) {
     assert(stack);
     assert(output);
 
+#ifdef ENABLE_PRT
     fprintf(output, "\t\t\tcnr1: ptr: '%p' val: '%c' or '%d'; cnr2: ptr: '%p' val: '%c' or '%d'\n",
         stack->cnr1, *stack->cnr1, *stack->cnr1, stack->cnr2, *stack->cnr2, *stack->cnr2);
+#endif
+
     fprintf(output, "\t\t\tcapacity: %llu\n", stack->capacity);
     if (stack->array == NULL) {
         fprintf(output, "\t\t\t[NULL DATA POINTER!]\n");
@@ -123,7 +124,7 @@ error_info_t DPrintStack(stack_t* stack) {
 
     STACK_VALID(stack);
 
-    DPRINTF("---\n" "stack {\n");
+    DPRINTF("stack {\n");
     for (size_t i = 0; i < stack->elementCount; i++) {
         DPRINTF("\tel[%llu] = ", i);
         DPRINTF(REG, stack->array[i]);
@@ -141,16 +142,24 @@ void initStack(stack_t* stack, size_t capacity) {
     stack->capacity = capacity;
     stack->elementCount = 0;
 
-    stack->cnr1 = (char*) calloc(2 + sizeof(element_t)*capacity, sizeof(char)); //защита канарейкой
-    char* mem = stack->cnr1;
-    stack->cnr2 = mem + (stack->capacity)*sizeof(element_t) + 1;
+#ifdef ENABLE_PRT
+    element_t* mem = (element_t*) calloc(2 + capacity, sizeof(element_t)); //защита канарейкой
 
+    stack->cnr1 = mem;
+    stack->cnr2 = mem + stack->capacity + 1;
     *(stack->cnr1) = CANARRAY;
     *(stack->cnr2) = CANARRAY;
-    stack->array = (element_t*) (void*) (mem+1);
+    stack->array = (mem+1);
+#else
+    stack->array = (element_t*) calloc(capacity, sizeof(element_t));
+#endif
+
     for (size_t i = 0; i < capacity; i++) {
         stack->array[i] = POISON;
     }
+
+    DPRINTF("after init: \n");
+    DPrintStack(stack);
 
     DPRINTF("stack init with poison values and canarrays\n");
 }
@@ -191,13 +200,19 @@ error_info_t stackPush(stack_t *stack, element_t element) {
         size_t newCapacity = stack->capacity * 2; //защита канарейкой
         DPRINTF("stack full, reallocating to size: %llu\n", newCapacity);
         stack->capacity = newCapacity;
-        stack->cnr1 = (char*) realloc(stack->cnr1, 2 + sizeof(element_t)*newCapacity); //защита канарейкой
-        char* mem = stack->cnr1;
-        stack->cnr2 = mem + (newCapacity + 1)*sizeof(element_t);
 
-        *(stack->cnr1) = CANARRAY;
-        *(stack->cnr2) = CANARRAY;
-        stack->array = (element_t*) (void*) (mem+1);
+        #ifdef ENABLE_PRT
+            element_t* mem = (element_t*) realloc(stack->cnr1, (newCapacity + 2)*sizeof(element_t)); //защита канарейкой
+
+            stack->cnr1 = mem;
+            stack->cnr2 = mem + stack->capacity + 1;
+            *(stack->cnr1) = CANARRAY;
+            *(stack->cnr2) = CANARRAY;
+            stack->array = (mem+1);
+        #else
+            stack->array = (element_t*) realloc(stack->array, newCapacity*sizeof(element_t));
+        #endif
+
         for (size_t i = stack->elementCount; i < newCapacity; i++) {
             stack->array[i] = POISON;
         }
@@ -241,9 +256,13 @@ error_info_t fprintStack(FILE* file, stack_t* stack) {
 
 error_info_t stackDestroy(stack_t* stack) {
     assert(stack);
-    assert(stack->cnr1);
-    STACK_VALID(stack);
-    free(stack->cnr1);
+    #ifdef ENABLE_PRT
+        assert(stack->cnr1);
+        free(stack->cnr1);
+    #else
+        assert(stack->array);
+        free(stack->array);
+    #endif
 
     return {SUCCESS};
 }

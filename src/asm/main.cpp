@@ -6,8 +6,10 @@ int main() {
 
     RETURN_ON_ERR(parseText(ASM_SRC_PATH, &text), text.buf, text.pointer_arr);
 
-    printf("input from %s:\n", ASM_SRC_PATH);
-    printPtrArray(stdout, &text);
+    #ifdef DEBUG
+        printf("input from %s:\n", ASM_SRC_PATH);
+        printPtrArray(stdout, &text);
+    #endif
 
     RETURN_ON_ERR(compile(&text), text.buf, text.pointer_arr);
 
