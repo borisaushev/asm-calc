@@ -32,8 +32,7 @@ typedef struct error_info {
     const char* file;
 } error_info_t;
 
-//TODO написать квадратку с разбором всех случаев (для a!=0, для a=1 выводим -1) вначале печатает кол-во корней потом если есть, то корни
-// Потом будем решать все виды
+
 typedef enum commands {
     ADD = 1,
     SUB,
