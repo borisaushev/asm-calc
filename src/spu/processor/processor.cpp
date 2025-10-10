@@ -5,7 +5,7 @@
 #include "struct/processorStruct.h"
 
 //TODO mb fix lambdas and replace with defines
-error_info_t verifySignature(FILE *file) {
+error_t verifySignature(FILE *file) {
     assert(file);
     char buf[10] = {};
     if (fscanf(file, "%s", buf) != 1 || strcmp(buf, SIGNATURA) != 0) {
@@ -16,10 +16,10 @@ error_info_t verifySignature(FILE *file) {
         RETURN_ERR(INVALID_INPUT, "INVALID BYTE CODE VERSION");
     }
 
-    return {SUCCESS};
+    return SUCCESS;
 }
 
-error_info_t parseInts(const char* filename, int arr[MAX_COMMANDS], size_t* commandsCount) {
+error_t parseCommands(const char* filename, int arr[MAX_COMMANDS], size_t* commandsCount) {
     assert(filename);
     assert(arr);
 
@@ -34,17 +34,17 @@ error_info_t parseInts(const char* filename, int arr[MAX_COMMANDS], size_t* comm
     int num = -1;
     while (fscanf(file, "%d", &num) == 1) {
         if (count > MAX_COMMANDS) {
-            return {INVALID_INPUT, "TOO MUCH COMMANDS!!!!"};
+            RETURN_ERR(INVALID_INPUT, "TOO MUCH COMMANDS!!!!");
         }
         arr[count++] = num;
     }
     *commandsCount = count;
 
     fclose(file);
-    return {SUCCESS};
+    return SUCCESS;
 }
 
-error_info_t funcOfTwo(stack_t* stack, int (*func) (int a, int b), const char* const funcName) {
+error_t funcOfTwo(stack_t* stack, int (*func) (int a, int b), const char* const funcName) {
     assert(stack);
     assert(func);
     assert(funcName);
@@ -61,11 +61,11 @@ error_info_t funcOfTwo(stack_t* stack, int (*func) (int a, int b), const char* c
     DPRINTF(": %d\n", val);
     SAFE_CALL(stackPush(stack, val));
 
-    return {SUCCESS};
+    return SUCCESS;
 }
 
-error_info_t getJmpIndexAndVals(processor_t *processor, int* index, int* v1, int* v2) {
-    *index = processor->commands[++processor->curI] - 1;
+error_t getJmpIndexAndVals(processor_t *processor, int* index, int* v1, int* v2) {
+    *index = processor->commands[++processor->CP] - 1;
     if (*index < 0 || (size_t) *index >= processor->commandsCount ) {
         RETURN_ERR(INVALID_INPUT, "index out of range");
     }
@@ -77,10 +77,10 @@ error_info_t getJmpIndexAndVals(processor_t *processor, int* index, int* v1, int
 
     DPRINTF("parsed jmp index: %d, v1: %d, v2: %d\n", *index, *v1, *v2)
 
-    return {SUCCESS};
+    return SUCCESS;
 }
 
-error_info_t runCmnds(processor_t* processor) {
+error_t runCmnds(processor_t* processor) {
     assert(processor);
     assert(processor->stack);
 
@@ -89,8 +89,8 @@ error_info_t runCmnds(processor_t* processor) {
 
     int curCmnd = -1;
     int line = 1;
-    for (; curCmnd != HLT && processor->curI < MAX_COMMANDS && processor->curI < processor->commandsCount; (processor->curI)++, line++) {
-        curCmnd = processor->commands[processor->curI];
+    for (; curCmnd != HLT && processor->CP < MAX_COMMANDS && processor->CP < processor->commandsCount; (processor->CP)++, line++) {
+        curCmnd = processor->commands[processor->CP];
 
         switch (curCmnd) {
             case ADD: {
@@ -139,7 +139,7 @@ error_info_t runCmnds(processor_t* processor) {
                 break;
             }
             case PUSH: {
-                int v = processor->commands[++processor->curI];
+                int v = processor->commands[++processor->CP];
                 SAFE_CALL(stackPush(processor->stack, v));
 
                 DPRINTF("PUSH: %d\n", v);
@@ -158,7 +158,7 @@ error_info_t runCmnds(processor_t* processor) {
                 break;
             }
             case PUSHREG: {
-                int reg = processor->commands[++processor->curI];
+                int reg = processor->commands[++processor->CP];
                 if (reg >= REGISTER_SIZE || reg < 0) {
                     RETURN_ERR(INVALID_INPUT, "reg value out of range");
                 }
@@ -170,7 +170,7 @@ error_info_t runCmnds(processor_t* processor) {
                 break;
             }
             case POPREG: {
-                int reg = processor->commands[++processor->curI];
+                int reg = processor->commands[++processor->CP];
                 if (reg >= REGISTER_SIZE || reg < 0) {
                     RETURN_ERR(INVALID_INPUT, "reg value out of range");
                 }
@@ -180,17 +180,17 @@ error_info_t runCmnds(processor_t* processor) {
                 break;
             }
             case CP: {
-                int reg = processor->commands[++processor->curI];
+                int reg = processor->commands[++processor->CP];
                 if (reg >= REGISTER_SIZE || reg < 0) {
                     RETURN_ERR(INVALID_INPUT, "reg value out of range");
                 }
 
-                processor->registerArr[reg] = (int) processor->curI;
+                processor->registerArr[reg] = (int) processor->CP;
                 DPRINTF("CP: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
                 break;
             }
             case JMP: {
-                int reg = processor->commands[++processor->curI];
+                int reg = processor->commands[++processor->CP];
                 if (reg >= REGISTER_SIZE || reg < 0) {
                     RETURN_ERR(INVALID_INPUT, "reg value out of range");
                 }
@@ -200,7 +200,7 @@ error_info_t runCmnds(processor_t* processor) {
                     RETURN_ERR(INVALID_INPUT, "jmp index out of range");
                 }
 
-                processor->curI = (size_t) jmpIndex;
+                processor->CP = (size_t) jmpIndex;
                 DPRINTF("JMP: reg: %d, val: %d\n", reg, jmpIndex);
                 break;
             }
@@ -209,8 +209,8 @@ error_info_t runCmnds(processor_t* processor) {
                 SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
 
                 if (v2 < v1) {
-                    DPRINTF("Jump form: %llu, to %d\n", processor->curI, index);
-                    processor->curI = (size_t) index;
+                    DPRINTF("Jump form: %llu, to %d\n", processor->CP, index);
+                    processor->CP = (size_t) index;
                 }
                 DPRINTF("JB: index: %d, v1: %d, v2: %d\n", index, v1, v2);
                 break;
@@ -220,8 +220,8 @@ error_info_t runCmnds(processor_t* processor) {
                 SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
 
                 if (v2 <= v1) {
-                    DPRINTF("Jump form: %llu, to %d\n", processor->curI, index);
-                    processor->curI = (size_t) index;
+                    DPRINTF("Jump form: %llu, to %d\n", processor->CP, index);
+                    processor->CP = (size_t) index;
                 }
                 DPRINTF("JBE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
                 break;
@@ -231,8 +231,8 @@ error_info_t runCmnds(processor_t* processor) {
                 SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
 
                 if (v2 > v1) {
-                    DPRINTF("Jump form: %llu, to %d\n", processor->curI, index);
-                    processor->curI = (size_t) index;
+                    DPRINTF("Jump form: %llu, to %d\n", processor->CP, index);
+                    processor->CP = (size_t) index;
                 }
                 DPRINTF("JA: index: %d, v1: %d, v2: %d\n", index, v1, v2);
                 break;
@@ -242,8 +242,8 @@ error_info_t runCmnds(processor_t* processor) {
                 SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
 
                 if (v2 >= v1) {
-                    DPRINTF("Jump form: %llu, to %d\n", processor->curI, index);
-                    processor->curI = (size_t) index;
+                    DPRINTF("Jump form: %llu, to %d\n", processor->CP, index);
+                    processor->CP = (size_t) index;
                 }
                 DPRINTF("JAE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
                 break;
@@ -253,8 +253,8 @@ error_info_t runCmnds(processor_t* processor) {
                 SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
 
                 if (v2 == v1) {
-                    DPRINTF("Jump form: %llu, to %d\n", processor->curI, index);
-                    processor->curI = (size_t) index;
+                    DPRINTF("Jump form: %llu, to %d\n", processor->CP, index);
+                    processor->CP = (size_t) index;
                 }
                 DPRINTF("JE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
                 break;
@@ -264,8 +264,8 @@ error_info_t runCmnds(processor_t* processor) {
                 SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
 
                 if (v2 != v1) {
-                    DPRINTF("Jump form: %llu, to %d\n", processor->curI, index);
-                    processor->curI = (size_t) index;
+                    DPRINTF("Jump form: %llu, to %d\n", processor->CP, index);
+                    processor->CP = (size_t) index;
                 }
                 DPRINTF("JNE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
                 break;
@@ -289,5 +289,5 @@ error_info_t runCmnds(processor_t* processor) {
 
     printf("end of the run\n");
 
-    return {SUCCESS};
+    return SUCCESS;
 }

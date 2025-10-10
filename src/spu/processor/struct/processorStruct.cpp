@@ -3,7 +3,7 @@
 #include "processor.h"
 
 
-error_info_t initProcessor(processor_t* processor, stack_t* stack, int commands[MAX_COMMANDS], size_t commandsCount) {
+error_t initProcessor(processor_t* processor, stack_t* stack, int commands[MAX_COMMANDS], size_t commandsCount) {
     assert(processor);
     assert(commands);
     assert(stack);
@@ -16,7 +16,7 @@ error_info_t initProcessor(processor_t* processor, stack_t* stack, int commands[
     for (size_t i = commandsCount; i < MAX_COMMANDS; i++) {
         processor->commands[i] = 0;
     }
-    processor->curI = 0;
+    processor->CP = 0;
     for (int i = 0; i < REGISTER_SIZE; i++) {
         processor->registerArr[i] = POISON;
     }
@@ -25,7 +25,7 @@ error_info_t initProcessor(processor_t* processor, stack_t* stack, int commands[
     return {SUCCESS};
 }
 
-error_info_t verifyProcessor(processor_t* processor) {
+error_t verifyProcessor(processor_t* processor) {
     assert(processor);
 
     dumpProcessor(processor);
@@ -37,7 +37,7 @@ error_info_t verifyProcessor(processor_t* processor) {
     if (processor->commandsCount > MAX_COMMANDS) {
         RETURN_ERR(NULL_PTR, "reasonable commands count exceeded");
     }
-    if (processor->curI > MAX_COMMANDS) {
+    if (processor->CP > MAX_COMMANDS) {
         RETURN_ERR(NULL_PTR, "current command index out of range");
     }
 
@@ -46,11 +46,11 @@ error_info_t verifyProcessor(processor_t* processor) {
 
 void printProcessor(processor_t *processor, FILE* dumpFile) {
     fprintf(dumpFile, "Processor dump:\n");
-    fprintf(dumpFile, "curI: %llu, commands count: %llu\n", processor->curI, processor->commandsCount);
+    fprintf(dumpFile, "curI: %llu, commands count: %llu\n", processor->CP, processor->commandsCount);
 
     fprintf(dumpFile, "commands: ");
     for (size_t i = 0; i < processor->commandsCount; i++) {
-        if (i == processor->curI) {
+        if (i == processor->CP) {
             fprintf(dumpFile, "(%d) ", processor->commands[i]);
         }
         else {
@@ -80,11 +80,11 @@ void printProcessor(processor_t *processor, FILE* dumpFile) {
 
 void DPrintProcessor(processor_t *processor) {
     DPRINTF("Processor dump:\n");
-    DPRINTF("curI: %llu, commands count: %llu\n", processor->curI, processor->commandsCount);
+    DPRINTF("curI: %llu, commands count: %llu\n", processor->CP, processor->commandsCount);
 
     DPRINTF("commands: [");
     for (size_t i = 0; i < processor->commandsCount; i++) {
-        if (i == processor->curI) {
+        if (i == processor->CP) {
             DPRINTF("(%d), ", processor->commands[i]);
         }
         else {

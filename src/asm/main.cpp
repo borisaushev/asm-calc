@@ -1,17 +1,30 @@
 #include "compiler.h"
 #include "line_reader.h"
 
-int main() {
+int main(int argc, char *argv[]) {
     pointer_array_buf_t text = {};
-
-    RETURN_ON_ERR(parseText(ASM_SRC_PATH, &text), text.buf, text.pointer_arr);
-
+    error_t error = SUCCESS;
+    if(argc == 2) {
+        error = parseText(argv[1], &text);
+        if (error != SUCCESS) {
+            FREE_ALL(text.buf, text.pointer_arr);
+            return INVALID_INPUT;
+        }
+    }
+    else {
+        if (parseText(ASM_SRC_PATH, &text) != SUCCESS) {
+            FREE_ALL(text.buf, text.pointer_arr);
+            return INVALID_INPUT;
+        }
+    }
     #ifdef DEBUG
         printf("input from %s:\n", ASM_SRC_PATH);
         printPtrArray(stdout, &text);
     #endif
 
-    RETURN_ON_ERR(compile(&text), text.buf, text.pointer_arr);
+    if (compile(&text) != SUCCESS) {
+        FREE_ALL(text.buf, text.pointer_arr);
+    }
 
     printf("\ncompilation finished\n");
     printf("pretty output is written to file %s\n", BYTECODE_PR_PATH);

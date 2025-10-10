@@ -23,15 +23,7 @@ typedef enum errors {
     FILE_NOT_FOUND,
     FILE_NOT_READABLE,
     INVALID_INPUT
-} error_code_t;
-
-typedef struct error_info {
-    error_code_t err_code;
-    const char* const msg;
-    int line;
-    const char* file;
-} error_info_t;
-
+} error_t;
 
 typedef enum commands {
     ADD = 1,
@@ -64,6 +56,7 @@ const int VERSION = 11;
 const char* const SIGNATURA = "BB";
 const int REGISTER_SIZE = 10;
 
+const int MAX_COMMAND_LENGTH = 100;
 const int MAX_COMMANDS = 1024;
 
 #define BEGIN do {
@@ -92,18 +85,17 @@ const int MAX_COMMANDS = 1024;
 
 #define RETURN_ERR(code, desc) \
     BEGIN \
-        PRINTERR("ERROR: %s\n", desc); \
-        return {code, desc, __LINE__, __FILE__}; \
+        PRINTERR("ERROR [%s:%d]: %s (code %d)\n", __FILE__, __LINE__, desc, code); \
+        return code; \
     END
 
 #define SAFE_CALL(func) \
     BEGIN \
-        error_info_t sf_call ## __LINE__ = (func); \
-        if (sf_call ## __LINE__.err_code != SUCCESS) { \
+        error_t sf_call ## __LINE__ = (func); \
+        if (sf_call ## __LINE__ != SUCCESS) { \
             return sf_call ## __LINE__; \
         } \
     END
-#endif //COMMON_H
 
 
 #define FREE_ALL(...) \
@@ -115,12 +107,5 @@ const int MAX_COMMANDS = 1024;
     } \
     END
 
-#define RETURN_ON_ERR(func, ...) \
-    BEGIN \
-    error_info_t callResult = (func); \
-    if(callResult.err_code != SUCCESS) { \
-        DPRINTF("ERROR [%s:%d]: %s (code %d)\n", callResult.file, callResult.line, callResult.msg, callResult.err_code); \
-        FREE_ALL(__VA_ARGS__); \
-        return callResult.err_code; \
-    } \
-    END
+#endif //COMMON_H
+

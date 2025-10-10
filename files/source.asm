@@ -15,6 +15,7 @@
 ;    принтим x1, x2
 
 ; было 10
+    ;
 IN ; a
 POPREG AX
 IN ; b

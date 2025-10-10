@@ -33,7 +33,7 @@ static void parsePointers(char *text, int ptr_count, ptr_wrap_t** ptr_array) {
     }
 }
 
-static error_info_t readFile(const char *file_path, char** text, int* bytes_read) {
+static error_t readFile(const char *file_path, char** text, int* bytes_read) {
     assert(text);
     assert(file_path);
     assert(bytes_read);
@@ -45,14 +45,14 @@ static error_info_t readFile(const char *file_path, char** text, int* bytes_read
 
     if (file_size < 0) {
         PRINTERR("Could not open file %s\n", file_path);
-        return {FILE_NOT_FOUND, "Could not open file"};
+        RETURN_ERR(FILE_NOT_FOUND, "Could not open file");
     }
     *text = (char *) calloc(file_size, sizeof(char));
     *bytes_read = read(stream, *text, file_size);
 
     if (*bytes_read == -1) {
         PRINTERR("Could not read file %s with err: %s\n", file_path, strerror(errno));
-        return {FILE_NOT_READABLE, "Could not read file"};
+        RETURN_ERR(FILE_NOT_READABLE, "Could not read file");
     }
     DPRINTF("Read %d bytes\n", *bytes_read);
     close(stream);
@@ -61,7 +61,7 @@ static error_info_t readFile(const char *file_path, char** text, int* bytes_read
     (*text)[*bytes_read] = (*text)[*bytes_read-1] == '\n' ? '\0' : '\n';
     (*text)[*bytes_read + 1] = '\0';
 
-    return {SUCCESS};
+    return SUCCESS;
 }
 
 static void countLines(const char *text, int bytes_read, int* ptr_count) {
@@ -75,7 +75,7 @@ static void countLines(const char *text, int bytes_read, int* ptr_count) {
     }
 }
 
-error_info_t parseText(const char *file_path, pointer_array_buf_t *arr_ptr) {
+error_t parseText(const char *file_path, pointer_array_buf_t *arr_ptr) {
     assert(file_path);
     assert(arr_ptr);
 
