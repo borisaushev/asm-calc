@@ -26,7 +26,7 @@ POPREG CX
 ; a == 0 - hlt
 PUSHREG AX ; если a == 0 конец
 PUSH 0
-JE 98;TODO
+JE :2;TODO
 
 PUSHREG BX ; b^2
 PUSHREG BX
@@ -44,7 +44,7 @@ POPREG DX ; записали квадрат D
 
 PUSHREG DX ; если D^2 < 0 конец
 PUSH 0
-JB 102 ; TODO
+JB :1 ; TODO
 
 PUSHREG DX
 SQRT
@@ -53,7 +53,7 @@ POPREG DX ; записали sqrt(D)
 ; переход в зависимости от D
 PUSHREG DX
 PUSH 0
-JNE 64; TODO
+JNE :3; TODO
 
 
 ; если DX == 0
@@ -73,6 +73,7 @@ OUT
 HLT
 
 
+:3
 ; если DX > 0
 ; считаем x1
 PUSH 2 ; вывод 2
@@ -114,6 +115,8 @@ PUSH -1
 OUT
 HLT
 
+:2
 PUSH 0
 OUT
+:1
 HLT

@@ -58,6 +58,7 @@ const int REGISTER_SIZE = 10;
 
 const int MAX_COMMAND_LENGTH = 100;
 const int MAX_COMMANDS = 1024;
+const int MAX_LABELS = 10;
 
 #define BEGIN do {
 #define END   } while (0);

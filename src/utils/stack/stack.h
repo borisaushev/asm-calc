@@ -23,8 +23,8 @@ typedef struct stack {
 
 
 //Юзать относительные пути
-const char* const STACK_LOG_FILE = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\stack.log";
-const char* const PROC_LOG_FILE = "C:\\Users\\bossb\\CLionProjects\\asm_calc\\files\\proc.log";
+const char* const STACK_LOG_FILE = "..\\files\\logs\\stack.log";
+const char* const PROC_LOG_FILE = "..\\files\\logs\\proc.log";
 const size_t MAX_REASONABLE_CAPACITY = 1024 * 1024 * 1024;
 
 error_t stackDump(const stack_t *stack, const char *file, int line, const char *function, error_t validation);

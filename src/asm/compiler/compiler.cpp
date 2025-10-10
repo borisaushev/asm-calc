@@ -55,14 +55,15 @@ static error_t modifyReg(FILE *targetPr, size_t* arrIndex, int* rough, int i, ch
 
     fprintf(targetPr, "%d %d\n", command, regInt);
 
-    rough[(*arrIndex)++] = command;
+    rough[*arrIndex] = command;
+    *arrIndex += 1;
     rough[*arrIndex] = regInt;
 
     return SUCCESS;
 }
 
 static error_t pushCmndAndValue(FILE *targetPr, const command_t command, int rough[MAX_COMMANDS],
-                                     size_t* arrIndex, const int i, const char *line) {
+                                size_t* arrIndex, const int i, const char *line) {
     int pushVal = POISON;
 
     char trash[50] = {};
@@ -74,10 +75,46 @@ static error_t pushCmndAndValue(FILE *targetPr, const command_t command, int rou
 
     fprintf(targetPr, "%d %d\n", command, pushVal);
 
-    rough[(*arrIndex)++] = command;
+    rough[*arrIndex] = command;
+    *arrIndex += 1;
     rough[*arrIndex] = pushVal;
 
     return SUCCESS;
+}
+
+static error_t jump(FILE *targetPr, const command_t command, int rough[MAX_COMMANDS],
+                    size_t* arrIndex, const int i, const char *line, int labels[MAX_LABELS]) {
+    int jmpVal = POISON;
+
+    char trash[50] = {};
+    if (sscanf(line, " %d %s", &jmpVal, trash) == 1 && jmpVal != POISON) {
+        DPRINTF("input value: %d\n", jmpVal);
+
+        fprintf(targetPr, "%d %d\n", command, jmpVal);
+
+        rough[*arrIndex] = command;
+        *arrIndex += 1;
+        rough[*arrIndex] = jmpVal;
+
+        return SUCCESS;
+    }
+
+    int label = -1;
+    if (sscanf(line, " :%d %s", &label, trash) == 1 && label >= 0 && label <= MAX_LABELS) {
+        DPRINTF("label: %d\n", label);
+        DPRINTF("label val: %d\n", labels[label]);
+
+        fprintf(targetPr, "%d %d\n", command, labels[label]);
+
+        rough[*arrIndex] = command;
+        *arrIndex += 1;
+        rough[*arrIndex] = labels[label];
+
+        return SUCCESS;
+    }
+
+    PRINT_ASM_LINE_ERR();
+    RETURN_ERR(INVALID_INPUT, "invalid input value");
 }
 
 char* findFirstSymb(char* str) {
@@ -86,19 +123,8 @@ char* findFirstSymb(char* str) {
     return str;
 }
 
-error_t compile(pointer_array_buf_t* text) {
-    assert(text);
-
-    FILE *targetPr;
-    FILE *targetStreamRough;
-    SAFE_CALL(openFiles(targetPr, targetStreamRough));
-    fprintf(targetPr, "%s V: %d\n", SIGNATURA, VERSION);
-
-    int rough[MAX_COMMANDS] = {};
+error_t substituteCommands(pointer_array_buf_t* text, FILE* targetPr, int labels[10], int rough[1024], char cmnd[100], size_t* size) {
     size_t arrIndex = 0;
-
-    char cmnd[MAX_COMMAND_LENGTH] = {};
-    DPRINTF("lines count: %d\n", text->lines_count);
     for (int i = 0; i < text->lines_count; i++) {
         char* line = strupr(findFirstSymb(text->pointer_arr[i].ptr));
         char* commentIndex = strchr(line, ';'); // коменты ингнорим
@@ -116,6 +142,7 @@ error_t compile(pointer_array_buf_t* text) {
         }
         DPRINTF("read line[%d]: '%s' and command: '%s'\n", i+1, line, cmnd);
         line = line+charsRead;
+
         if (strcmp(cmnd, "ADD") == 0) {
             SAFE_CALL(addCmnd(targetPr, arrIndex, rough, ADD, line, i));
         }
@@ -153,22 +180,33 @@ error_t compile(pointer_array_buf_t* text) {
             SAFE_CALL(modifyReg(targetPr, &arrIndex, rough, i, line, JMP));
         }
         else if (strcmp(cmnd, "JB") == 0) {
-            SAFE_CALL(pushCmndAndValue(targetPr, JB, rough, &arrIndex, i, line));
+            SAFE_CALL(jump(targetPr, JB, rough, &arrIndex, i, line, labels));
         }
         else if (strcmp(cmnd, "JBE") == 0) {
-            SAFE_CALL(pushCmndAndValue(targetPr, JBE, rough, &arrIndex, i, line));
+            SAFE_CALL(jump(targetPr, JBE, rough, &arrIndex, i, line, labels));
         }
         else if (strcmp(cmnd, "JA") == 0) {
-            SAFE_CALL(pushCmndAndValue(targetPr, JA, rough, &arrIndex, i, line));
+            SAFE_CALL(jump(targetPr, JA, rough, &arrIndex, i, line, labels));
         }
         else if (strcmp(cmnd, "JAE") == 0) {
-            SAFE_CALL(pushCmndAndValue(targetPr, JAE, rough, &arrIndex, i, line));
+            SAFE_CALL(jump(targetPr, JAE, rough, &arrIndex, i, line, labels));
         }
         else if (strcmp(cmnd, "JE") == 0) {
-            SAFE_CALL(pushCmndAndValue(targetPr, JE, rough, &arrIndex, i, line));
+            SAFE_CALL(jump(targetPr, JE, rough, &arrIndex, i, line, labels));
         }
         else if (strcmp(cmnd, "JNE") == 0) {
-            SAFE_CALL(pushCmndAndValue(targetPr, JNE, rough, &arrIndex, i, line));
+            SAFE_CALL(jump(targetPr, JNE, rough, &arrIndex, i, line, labels));
+        }
+        else if (cmnd[0] == ':') {
+            int label = -1;
+            char trash[50] = {};
+            if (sscanf(cmnd, ":%d %s", &label, trash) != 1 || label < 0 || label >= MAX_LABELS) {
+                RETURN_ERR(INVALID_INPUT, "invalid label");
+            }
+
+            DPRINTF("read label: '%d', with arr index: '%llu'\n", label, arrIndex);
+            labels[label] = (int) arrIndex;
+            continue;
         }
         else if (strcmp(cmnd, "HLT") == 0) {
             SAFE_CALL(addCmnd(targetPr, arrIndex, rough, HLT, line, i));
@@ -184,9 +222,33 @@ error_t compile(pointer_array_buf_t* text) {
         RETURN_ERR(INVALID_INPUT, "PROGRAMM IS NOT FINITE, POSSIBLE TIME CURVATURE OF SPACE AND TIME");
     }
 
+    *size = arrIndex;
+    return SUCCESS;
+}
+
+error_t compile(pointer_array_buf_t* text) {
+    assert(text);
+
+    FILE *targetPr;
+    FILE *targetStreamRough;
+    SAFE_CALL(openFiles(targetPr, targetStreamRough));
+
+    fprintf(targetPr, "%s V: %d\n", SIGNATURA, VERSION);
+    DPRINTF("lines count: %d\n", text->lines_count);
+
+    int labels[MAX_LABELS] = {};
+
+    int rough[MAX_COMMANDS] = {};
+
+    char cmnd[MAX_COMMAND_LENGTH] = {};
+
+    size_t size = 0;
+    SAFE_CALL(substituteCommands(text, stdout, labels, rough, cmnd, &size));
+    SAFE_CALL(substituteCommands(text, targetPr, labels, rough, cmnd, &size));
+
     DPRINTF("the compiler meets its destiny\n");
 
-    fwrite(rough, sizeof(int), arrIndex, targetStreamRough);
+    fwrite(rough, sizeof(int), size, targetStreamRough);
 
     fclose(targetPr);
     fclose(targetStreamRough);

@@ -66,7 +66,7 @@ error_t funcOfTwo(stack_t* stack, int (*func) (int a, int b), const char* const 
 
 error_t getJmpIndexAndVals(processor_t *processor, int* index, int* v1, int* v2) {
     *index = processor->commands[++processor->CP] - 1;
-    if (*index < 0 || (size_t) *index >= processor->commandsCount ) {
+    if (*index < 0 || (size_t) *index >= processor->commandsCount) {
         RETURN_ERR(INVALID_INPUT, "index out of range");
     }
 
