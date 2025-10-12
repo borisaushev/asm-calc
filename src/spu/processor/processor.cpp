@@ -4,41 +4,28 @@
 #include "stack.h"
 #include "struct/processorStruct.h"
 
-//TODO mb fix lambdas and replace with defines
-error_t verifySignature(FILE *file) {
-    assert(file);
-    char buf[10] = {};
-    if (fscanf(file, "%s", buf) != 1 || strcmp(buf, SIGNATURA) != 0) {
-        RETURN_ERR(INVALID_INPUT, "INVALID BYTE CODE SIGNATURE");
-    }
-    int version = -1;
-    if (fscanf(file, " V: %d\n", &version) != 1 || version != VERSION) {
-        RETURN_ERR(INVALID_INPUT, "INVALID BYTE CODE VERSION");
-    }
-
-    return SUCCESS;
-}
-
 error_t parseCommands(const char* filename, int arr[MAX_COMMANDS], size_t* commandsCount) {
     assert(filename);
     assert(arr);
+    assert(commandsCount);
+
 
     FILE* file = fopen(filename, "r");
     if (!file) {
         RETURN_ERR(FILE_NOT_READABLE, "could not open file");
     }
 
-    SAFE_CALL(verifySignature(file));
-
-    size_t count = 0;
-    int num = -1;
-    while (fscanf(file, "%d", &num) == 1) {
-        if (count > MAX_COMMANDS) {
-            RETURN_ERR(INVALID_INPUT, "TOO MUCH COMMANDS!!!!");
-        }
-        arr[count++] = num;
+    int signatura = -1, version = -1;
+    fread(&signatura, sizeof(int), 1, file);
+    fread(&version, sizeof(int), 1, file);
+    if (signatura != SIGNATURA_BYTE) {
+        RETURN_ERR(INVALID_INPUT, "INVALID BYTE CODE SIGNATURE");
     }
-    *commandsCount = count;
+    if (version != VERSION) {
+        RETURN_ERR(INVALID_INPUT, "INVALID BYTE CODE VERSION");
+    }
+
+    *commandsCount = fread(arr, sizeof(int), MAX_COMMANDS + 2, file);
 
     fclose(file);
     return SUCCESS;
@@ -64,7 +51,7 @@ error_t funcOfTwo(stack_t* stack, int (*func) (int a, int b), const char* const 
     return SUCCESS;
 }
 
-error_t getJmpIndexAndVals(processor_t *processor, int* index, int* v1, int* v2) {
+static error_t getJmpIndexAndVals(processor_t *processor, int* index, int* v1, int* v2) {
     *index = processor->commands[++processor->CP] - 1;
     if (*index < 0 || (size_t) *index >= processor->commandsCount) {
         RETURN_ERR(INVALID_INPUT, "index out of range");
@@ -274,7 +261,7 @@ error_t runCmnds(processor_t* processor) {
                 break;
             }
             default: {
-                PRINTERR("UNKNOWN COMMAND '%d' at %s:%d\n", curCmnd, BYTECODE_PR_PATH, line + 1);
+                PRINTERR("UNKNOWN COMMAND '%d' at %s:%d\n", curCmnd, ASM_SRC_PATH, line + 1);
                 RETURN_ERR(INVALID_INPUT, "unknown command");
             }
         }

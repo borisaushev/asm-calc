@@ -111,12 +111,12 @@ DIV ; (-b-D)/2*a
 OUT ; выводим x2
 HLT
 
+:2
 PUSH -1
 OUT
 HLT
 
-:2
+:1
 PUSH 0
 OUT
-:1
 HLT

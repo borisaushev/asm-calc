@@ -21,9 +21,10 @@ int main(int argc, char *argv[]) {
         printf("input from %s:\n", ASM_SRC_PATH);
         printPtrArray(stdout, &text);
     #endif
-
-    if (compile(&text) != SUCCESS) {
+    error = compile(&text);
+    if (error != SUCCESS) {
         FREE_ALL(text.buf, text.pointer_arr);
+        return error;
     }
 
     printf("\ncompilation finished\n");

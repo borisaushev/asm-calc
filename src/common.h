@@ -54,6 +54,7 @@ const char* const BYTECODE_PATH = "..\\files\\bytecode.bbc";
 
 const int VERSION = 11;
 const char* const SIGNATURA = "BB";
+const int SIGNATURA_BYTE = 0xBB;
 const int REGISTER_SIZE = 10;
 
 const int MAX_COMMAND_LENGTH = 100;

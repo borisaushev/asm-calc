@@ -12,7 +12,7 @@ typedef struct processor {
     int registerArr[REGISTER_SIZE];
 } processor_t;
 
-error_t initProcessor(processor_t* processor, stack_t* stack, int commands[MAX_COMMANDS], size_t commandsCount);
+error_t initProcessor(processor_t* processor, stack_t* stack, const int commands[MAX_COMMANDS], size_t commandsCount);
 error_t verifyProcessor(processor_t* processor);
 
 void dumpProcessor(processor_t* processor);

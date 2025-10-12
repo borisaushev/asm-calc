@@ -3,7 +3,7 @@
 #include "processor.h"
 
 
-error_t initProcessor(processor_t* processor, stack_t* stack, int commands[MAX_COMMANDS], size_t commandsCount) {
+error_t initProcessor(processor_t* processor, stack_t* stack, const int commands[MAX_COMMANDS], size_t commandsCount) {
     assert(processor);
     assert(commands);
     assert(stack);
@@ -22,7 +22,7 @@ error_t initProcessor(processor_t* processor, stack_t* stack, int commands[MAX_C
     }
     processor->commandsCount = commandsCount;
 
-    return {SUCCESS};
+    return SUCCESS;
 }
 
 error_t verifyProcessor(processor_t* processor) {
@@ -41,7 +41,7 @@ error_t verifyProcessor(processor_t* processor) {
         RETURN_ERR(NULL_PTR, "current command index out of range");
     }
 
-    return {SUCCESS};
+    return SUCCESS;
 }
 
 void printProcessor(processor_t *processor, FILE* dumpFile) {

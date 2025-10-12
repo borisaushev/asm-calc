@@ -25,9 +25,10 @@ static void parsePointers(char *text, int ptr_count, ptr_wrap_t** ptr_array) {
     for (int i = 0; i < ptr_count; i++) {
         nextLine = strchr(curptr, '\n');
         assert(nextLine);
+        assert(nextLine >= curptr);
 
         *nextLine = '\0';
-        int len = nextLine - curptr;
+        int len = (int) (nextLine - curptr);
         (*ptr_array)[i] = {.ptr=curptr, .len=len};
         curptr = nextLine + 1;
     }
@@ -96,7 +97,7 @@ error_t parseText(const char *file_path, pointer_array_buf_t *arr_ptr) {
     arr_ptr->buf = text;
     arr_ptr->lines_count = ptr_count;
 
-    return {SUCCESS};
+    return SUCCESS;
 }
 
 void printPtrArray(FILE* output, ptr_array_buf* ptr_array) {
