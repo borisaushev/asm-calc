@@ -3,20 +3,25 @@
 #include "processor.h"
 
 
-error_t initProcessor(processor_t* processor, stack_t* stack, const int commands[MAX_COMMANDS], size_t commandsCount) {
+error_t initProcessor(processor_t* processor, stack_t* valuesStack, const int commands[MAX_COMMANDS],
+                      size_t commandsCount, stack_t* callStack) {
     assert(processor);
     assert(commands);
-    assert(stack);
+    assert(valuesStack);
+    assert(callStack);
 
-    STACK_VALID(stack);
-    processor->stack = stack;
+    STACK_VALID(valuesStack);
+    STACK_VALID(callStack);
+    processor->valuesStack = valuesStack;
+    processor->callStack = callStack;
     for (size_t i = 0; i < commandsCount; i++) {
         processor->commands[i] = commands[i];
     }
     for (size_t i = commandsCount; i < MAX_COMMANDS; i++) {
-        processor->commands[i] = 0;
+        processor->commands[i] = POISON;
     }
     processor->CP = 0;
+
     for (int i = 0; i < REGISTER_SIZE; i++) {
         processor->registerArr[i] = POISON;
     }
@@ -29,10 +34,10 @@ error_t verifyProcessor(processor_t* processor) {
     assert(processor);
 
     dumpProcessor(processor);
-    if (processor->stack == NULL) {
+    if (processor->valuesStack == NULL) {
         RETURN_ERR(NULL_PTR, "stack ptr is null");
     }
-    STACK_VALID(processor->stack);
+    STACK_VALID(processor->valuesStack);
 
     if (processor->commandsCount > MAX_COMMANDS) {
         RETURN_ERR(NULL_PTR, "reasonable commands count exceeded");
@@ -72,8 +77,13 @@ void printProcessor(processor_t *processor, FILE* dumpFile) {
     }
     fprintf(dumpFile, "\n");
 
-    stackDump(processor->stack, __FILE__, __LINE__, __FUNCTION__, validateStack(processor->stack));
-    fprintStack(dumpFile, processor->stack);
+    fprintf(dumpFile, "values stack:\n");
+    stackDump(processor->valuesStack, __FILE__, __LINE__, __FUNCTION__, validateStack(processor->valuesStack));
+    fprintStack(dumpFile, processor->valuesStack);
+
+    fprintf(dumpFile, "call stack:\n");
+    stackDump(processor->callStack, __FILE__, __LINE__, __FUNCTION__, validateStack(processor->callStack));
+    fprintStack(dumpFile, processor->callStack);
 
     fflush(dumpFile);
 }
@@ -106,8 +116,13 @@ void DPrintProcessor(processor_t *processor) {
     }
     DPRINTF("\n");
 
-    stackDump(processor->stack, __FILE__, __LINE__, __FUNCTION__, validateStack(processor->stack));
-    DPrintStack(processor->stack);
+    DPRINTF("values stack:\n");
+    stackDump(processor->valuesStack, __FILE__, __LINE__, __FUNCTION__, validateStack(processor->valuesStack));
+    DPrintStack(processor->valuesStack);
+
+    DPRINTF("call stack:\n");
+    stackDump(processor->callStack, __FILE__, __LINE__, __FUNCTION__, validateStack(processor->callStack));
+    DPrintStack(processor->callStack);
 }
 
 void dumpProcessor(processor_t* processor) {
@@ -121,7 +136,7 @@ void dumpProcessor(processor_t* processor) {
 
 void destroyProcessor(processor_t* processor) {
     assert(processor);
-    assert(processor->stack);
-    stackDestroy(processor->stack);
+    assert(processor->valuesStack);
+    stackDestroy(processor->valuesStack);
 }
 

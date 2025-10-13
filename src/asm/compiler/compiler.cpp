@@ -19,6 +19,7 @@ error_t openFiles(FILE *&targetPr, FILE *&targetStreamBytes) {
 }
 
 static error_t addCmnd(FILE *targetPr, size_t arrIndex, int* commandsArr, command_t command, char* line, int i) {
+    fprintf(targetPr, "%03llu    ", arrIndex);
     size_t len = strlen(line);
     for (size_t ch = 0; ch < len; ch++) {
         if (!isspace(line[ch])) {
@@ -27,7 +28,7 @@ static error_t addCmnd(FILE *targetPr, size_t arrIndex, int* commandsArr, comman
         }
     }
 
-    fprintf(targetPr, "%d\n", command);
+    fprintf(targetPr, "%0.8d    ", command);
     commandsArr[arrIndex] = command;
     return SUCCESS;
 }
@@ -52,6 +53,8 @@ static error_t getRegVal(int i, char *line, char* regVal) {
 }
 
 static error_t modifyReg(FILE *targetPr, size_t* arrIndex, int* commandsArr, int i, char *line, command_t command) {
+    fprintf(targetPr, "%03llu    ", *arrIndex);
+
     char regVal = 0;
     SAFE_CALL(getRegVal(i, line, &regVal));
     const int regInt = regVal - 'A';
@@ -63,7 +66,7 @@ static error_t modifyReg(FILE *targetPr, size_t* arrIndex, int* commandsArr, int
         RETURN_ERR(INVALID_INPUT, "invalid register value");
     }
 
-    fprintf(targetPr, "%d %d\n", command, regInt);
+    fprintf(targetPr, "%0.3d  %0.3d    ", command, regInt);
 
     commandsArr[*arrIndex] = command;
     *arrIndex += 1;
@@ -74,6 +77,8 @@ static error_t modifyReg(FILE *targetPr, size_t* arrIndex, int* commandsArr, int
 
 static error_t pushCmndAndValue(FILE *targetPr, const command_t command, int commandsArr[MAX_COMMANDS],
                                 size_t* arrIndex, const int i, const char *line) {
+    fprintf(targetPr, "%03llu    ", *arrIndex);
+
     int pushVal = POISON;
 
     int read = 0;
@@ -92,7 +97,7 @@ static error_t pushCmndAndValue(FILE *targetPr, const command_t command, int com
 
     DPRINTF("input value: %d\n", pushVal);
 
-    fprintf(targetPr, "%d %d\n", command, pushVal);
+    fprintf(targetPr, "%03d  %03d    ", command, pushVal);
 
     commandsArr[*arrIndex] = command;
     *arrIndex += 1;
@@ -103,6 +108,8 @@ static error_t pushCmndAndValue(FILE *targetPr, const command_t command, int com
 
 static error_t jump(FILE *targetPr, const command_t command, int commandsArr[MAX_COMMANDS],
                     size_t* arrIndex, const int i, const char *line, int labels[MAX_LABELS], size_t* unknownLabels) {
+    fprintf(targetPr, "%03llu    ", *arrIndex);
+
     int jmpVal = POISON;
     int read = 0;
     int scanCount = sscanf(line, " %d%n", &jmpVal, &read);
@@ -116,7 +123,7 @@ static error_t jump(FILE *targetPr, const command_t command, int commandsArr[MAX
         }
         DPRINTF("input value: %d\n", jmpVal);
 
-        fprintf(targetPr, "%d %d\n", command, jmpVal);
+        fprintf(targetPr, "%0.3d  %0.3d    ", command, jmpVal);
 
         commandsArr[*arrIndex] = command;
         *arrIndex += 1;
@@ -139,7 +146,7 @@ static error_t jump(FILE *targetPr, const command_t command, int commandsArr[MAX
         DPRINTF("label: %d\n", label);
         DPRINTF("label val: %d\n", labels[label]);
 
-        fprintf(targetPr, "%d %d\n", command, labels[label]);
+        fprintf(targetPr, "%0.3d  %0.3d    ", command, labels[label]);
 
         commandsArr[*arrIndex] = command;
         *arrIndex += 1;
@@ -214,11 +221,8 @@ error_t writeCommands(pointer_array_buf_t* text, FILE* targetPr, int labels[MAX_
         else if (strcmp(cmnd, "POPREG") == 0) {
             SAFE_CALL(modifyReg(targetPr, &arrIndex, commandsArr, i, line, POPREG));
         }
-        else if (strcmp(cmnd, "CP") == 0) {
-            SAFE_CALL(modifyReg(targetPr, &arrIndex, commandsArr, i, line, CP));
-        }
         else if (strcmp(cmnd, "JMP") == 0) {
-            SAFE_CALL(modifyReg(targetPr, &arrIndex, commandsArr, i, line, JMP));
+            SAFE_CALL(jump(targetPr, JMP, commandsArr, &arrIndex, i, line, labels, unknownLabels));
         }
         else if (strcmp(cmnd, "JB") == 0) {
             SAFE_CALL(jump(targetPr, JB, commandsArr, &arrIndex, i, line, labels, unknownLabels));
@@ -237,6 +241,12 @@ error_t writeCommands(pointer_array_buf_t* text, FILE* targetPr, int labels[MAX_
         }
         else if (strcmp(cmnd, "JNE") == 0) {
             SAFE_CALL(jump(targetPr, JNE, commandsArr, &arrIndex, i, line, labels, unknownLabels));
+        }
+        else if (strcmp(cmnd, "CALL") == 0) {
+            SAFE_CALL(jump(targetPr, CALL, commandsArr, &arrIndex, i, line, labels, unknownLabels));
+        }
+        else if (strcmp(cmnd, "RET") == 0) {
+            SAFE_CALL(addCmnd(targetPr, arrIndex, commandsArr, RET, line, i));
         }
         else if (cmnd[0] == ':') {
             int label = -1, read = 0;
@@ -264,6 +274,7 @@ error_t writeCommands(pointer_array_buf_t* text, FILE* targetPr, int labels[MAX_
             PRINT_ASM_LINE_ERR();
             RETURN_ERR(INVALID_INPUT, "invalid command");
         }
+        fprintf(targetPr, "%1.10s\n", cmnd);
 
         arrIndex++;
     }

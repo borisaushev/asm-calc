@@ -3,10 +3,12 @@
 #include "processor.h"
 
 int main() {
-    stack_t stack = {};
-    processor_t processor = {};
-    initStack(&stack, 10);
+    stack_t valuesStack = {};
+    initStack(&valuesStack, 10);
+    stack_t callStack = {};
+    initStack(&callStack, 10);
 
+    processor_t processor = {};
     /*
     int commands[MAX_COMMANDS] = {};
     size_t commandsCount = 0;
@@ -21,11 +23,11 @@ int main() {
     size_t commandsCount = 0;
     error_t callResult = parseCommands(BYTECODE_PATH, commands, &commandsCount);
     if(callResult != SUCCESS) {
-        stackDestroy(&stack);
+        stackDestroy(&valuesStack);
         return callResult;
     }
 
-    initProcessor(&processor, &stack, commands, commandsCount);
+    initProcessor(&processor, &valuesStack, commands, commandsCount, &callStack);
 
     runCmnds(&processor);
 

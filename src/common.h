@@ -10,7 +10,6 @@
 #include <filesystem>
 
 //TODO сделать отдельные enum-ы для разных мест
-//TODO добавить вывод строки где был дамп процессора
 
 typedef enum errors {
     SUCCESS = 0,
@@ -36,23 +35,24 @@ typedef enum commands {
     PUSH,
     POPREG,
     PUSHREG,
-    CP, // set given reg to next command (CP AX)
-    JMP, // jump to given reg (JMP AX)
+    JMP,
     JB,
     JBE,
     JA,
     JAE,
     JE,
     JNE,
+    CALL,
+    RET,
     HLT,
 } command_t;
 
 // const char* const ASM_SRC_PATH = "..\\files\\examples\\JNE.asm";
-const char* const ASM_SRC_PATH = "..\\files\\source.asm";
-const char* const BYTECODE_PR_PATH = "..\\files\\bytecode_pretty.txt";
+const char* const ASM_SRC_PATH = "..\\files\\factorial.asm";
+const char* const BYTECODE_PR_PATH = "..\\files\\listing.lst";
 const char* const BYTECODE_PATH = "..\\files\\bytecode.bbc";
 
-const int VERSION = 11;
+const int VERSION = 15;
 const char* const SIGNATURA = "BB";
 const int SIGNATURA_BYTE = 0xBB;
 const int REGISTER_SIZE = 10;

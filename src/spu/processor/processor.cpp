@@ -51,16 +51,29 @@ error_t funcOfTwo(stack_t* stack, int (*func) (int a, int b), const char* const 
     return SUCCESS;
 }
 
-static error_t getJmpIndexAndVals(processor_t *processor, int* index, int* v1, int* v2) {
+static error_t getJmpIndex(processor_t *processor, int *index) {
+    assert(processor);
+    assert(index);
     *index = processor->commands[++processor->CP] - 1;
     if (*index < 0 || (size_t) *index >= processor->commandsCount) {
         RETURN_ERR(INVALID_INPUT, "index out of range");
     }
 
+    return SUCCESS;
+}
+
+static error_t getJmpIndexAndVals(processor_t *processor, int* index, int* v1, int* v2) {
+    assert(processor);
+    assert(index);
+    assert(v1);
+    assert(v2);
+
+    SAFE_CALL(getJmpIndex(processor, index));
+
     *v1 = -1;
     *v2 = -1;
-    SAFE_CALL(stackPop(processor->stack, v1));
-    SAFE_CALL(stackPop(processor->stack, v2));
+    SAFE_CALL(stackPop(processor->valuesStack, v1));
+    SAFE_CALL(stackPop(processor->valuesStack, v2));
 
     DPRINTF("parsed jmp index: %d, v1: %d, v2: %d\n", *index, *v1, *v2)
 
@@ -69,7 +82,7 @@ static error_t getJmpIndexAndVals(processor_t *processor, int* index, int* v1, i
 
 error_t runCmnds(processor_t* processor) {
     assert(processor);
-    assert(processor->stack);
+    assert(processor->valuesStack);
 
     DPrintProcessor(processor);
     SAFE_CALL(verifyProcessor(processor));
@@ -81,33 +94,33 @@ error_t runCmnds(processor_t* processor) {
 
         switch (curCmnd) {
             case ADD: {
-                funcOfTwo(processor->stack, [] (int a, int b) -> int { return a + b; }, "ADD");
+                funcOfTwo(processor->valuesStack, [] (int a, int b) -> int { return a + b; }, "ADD");
                 break;
             }
             case SUB: {
-                funcOfTwo(processor->stack, [] (int a, int b) -> int { return b - a; }, "SUB");
+                funcOfTwo(processor->valuesStack, [] (int a, int b) -> int { return b - a; }, "SUB");
                 break;
             }
             case MUL: {
-                funcOfTwo(processor->stack, [] (int a, int b) -> int { return a * b; }, "MUL");
+                funcOfTwo(processor->valuesStack, [] (int a, int b) -> int { return a * b; }, "MUL");
                 break;
             }
             case DIV: {
                 int v1 = POISON, v2 = POISON;
-                SAFE_CALL(stackPop(processor->stack, &v1));
-                SAFE_CALL(stackPop(processor->stack, &v2));
+                SAFE_CALL(stackPop(processor->valuesStack, &v1));
+                SAFE_CALL(stackPop(processor->valuesStack, &v2));
 
                 int val = v2 / v1;
                 if (v1 == 0) {
                     RETURN_ERR(INVALID_INPUT, "division by zero");
                 }
                 DPRINTF("DIV: %d\n", val);
-                SAFE_CALL(stackPush(processor->stack, val));
+                SAFE_CALL(stackPush(processor->valuesStack, val));
                 break;
             }
             case SQRT: {
                 int v1 = POISON;
-                SAFE_CALL(stackPop(processor->stack, &v1));
+                SAFE_CALL(stackPop(processor->valuesStack, &v1));
 
                 if (v1 < 0) {
                     RETURN_ERR(INVALID_INPUT, "negative number passed to sqrt");
@@ -115,19 +128,19 @@ error_t runCmnds(processor_t* processor) {
                 int val = (int) sqrt(v1);
 
                 DPRINTF("SQRT: %d\n", val);
-                SAFE_CALL(stackPush(processor->stack, val));
+                SAFE_CALL(stackPush(processor->valuesStack, val));
                 break;
             }
             case OUT: {
                 int v = POISON;
-                SAFE_CALL(stackPop(processor->stack, &v));
+                SAFE_CALL(stackPop(processor->valuesStack, &v));
 
                 printf("OUT: %d\n", v);
                 break;
             }
             case PUSH: {
                 int v = processor->commands[++processor->CP];
-                SAFE_CALL(stackPush(processor->stack, v));
+                SAFE_CALL(stackPush(processor->valuesStack, v));
 
                 DPRINTF("PUSH: %d\n", v);
                 break;
@@ -141,7 +154,7 @@ error_t runCmnds(processor_t* processor) {
                 printf("\n");
 
                 DPRINTF("INPUT: %d\n", inp);
-                SAFE_CALL(stackPush(processor->stack, inp));
+                SAFE_CALL(stackPush(processor->valuesStack, inp));
                 break;
             }
             case PUSHREG: {
@@ -152,7 +165,7 @@ error_t runCmnds(processor_t* processor) {
                 if (processor->registerArr[reg] == POISON) {
                     RETURN_ERR(INVALID_INPUT, "register is not initialized");
                 }
-                SAFE_CALL(stackPush(processor->stack, processor->registerArr[reg]));
+                SAFE_CALL(stackPush(processor->valuesStack, processor->registerArr[reg]));
                 DPRINTF("PUSHREG: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
                 break;
             }
@@ -162,33 +175,16 @@ error_t runCmnds(processor_t* processor) {
                     RETURN_ERR(INVALID_INPUT, "reg value out of range");
                 }
 
-                SAFE_CALL(stackPop(processor->stack, &(processor->registerArr[reg])));
+                SAFE_CALL(stackPop(processor->valuesStack, &(processor->registerArr[reg])));
                 DPRINTF("POPREG: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
                 break;
             }
-            case CP: {
-                int reg = processor->commands[++processor->CP];
-                if (reg >= REGISTER_SIZE || reg < 0) {
-                    RETURN_ERR(INVALID_INPUT, "reg value out of range");
-                }
-
-                processor->registerArr[reg] = (int) processor->CP;
-                DPRINTF("CP: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
-                break;
-            }
             case JMP: {
-                int reg = processor->commands[++processor->CP];
-                if (reg >= REGISTER_SIZE || reg < 0) {
-                    RETURN_ERR(INVALID_INPUT, "reg value out of range");
-                }
+                int index = -1;
+                SAFE_CALL(getJmpIndex(processor, &index));
 
-                int jmpIndex = processor->registerArr[reg];
-                if (jmpIndex < 0 || jmpIndex >= (int) processor->commandsCount) {
-                    RETURN_ERR(INVALID_INPUT, "jmp index out of range");
-                }
-
-                processor->CP = (size_t) jmpIndex;
-                DPRINTF("JMP: reg: %d, val: %d\n", reg, jmpIndex);
+                DPRINTF("JMP form: %llu, to %d\n", processor->CP, index);
+                processor->CP = (size_t) index;
                 break;
             }
             case JB: {
@@ -255,6 +251,25 @@ error_t runCmnds(processor_t* processor) {
                     processor->CP = (size_t) index;
                 }
                 DPRINTF("JNE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
+                break;
+            }
+            case CALL: {
+                int index = -1;
+                SAFE_CALL(getJmpIndex(processor, &index));
+
+                DPRINTF("CALL: from: [%llu], to index: [%d]\n", processor->CP, index);
+                SAFE_CALL(stackPush(processor->callStack, (int) processor->CP));
+                processor->CP = (size_t) index;
+                break;
+            }
+            case RET: {
+                int retIndex = -1;
+                stackPop(processor->callStack, &retIndex);
+                if (retIndex < 0 || retIndex >= (int) processor->commandsCount || retIndex == POISON) {
+                    RETURN_ERR(INVALID_INPUT, "invalid return index");
+                }
+                DPRINTF("RET: from: [%llu] to index: [%d]\n", processor->CP, retIndex);
+                processor->CP = (size_t) retIndex;
                 break;
             }
             case HLT: {

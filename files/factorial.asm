@@ -1,0 +1,38 @@
+IN
+POPREG AX
+
+PUSHREG AX ; A = n
+PUSH 0
+JBE :3 ; n <= 0 -> заершаем программу
+
+PUSH 1
+POPREG BX ; B - текущее произведение
+
+CALL :1
+PUSHREG BX
+OUT
+HLT
+
+:1
+PUSHREG AX
+PUSH 1
+JBE :2
+
+PUSHREG BX
+PUSHREG AX
+
+MUL ; A*B
+POPREG BX ; B = A*B
+
+PUSHREG AX
+PUSH 1
+SUB
+POPREG AX ; A = A - 1
+
+CALL :1
+:2
+RET
+
+
+:3
+HLT

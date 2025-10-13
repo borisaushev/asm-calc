@@ -3,7 +3,6 @@
 #include <cassert>
 #include <cstdio>
 
-
 error_t validateStack(const stack_t* stack) {
     // DPRINTF("=== STACK VALIDATION STARTED ===\n");
 
