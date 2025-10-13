@@ -38,6 +38,10 @@ error_t verifyProcessor(processor_t* processor) {
         RETURN_ERR(NULL_PTR, "stack ptr is null");
     }
     STACK_VALID(processor->valuesStack);
+    if (processor->callStack == NULL) {
+        RETURN_ERR(NULL_PTR, "stack ptr is null");
+    }
+    STACK_VALID(processor->callStack);
 
     if (processor->commandsCount > MAX_COMMANDS) {
         RETURN_ERR(NULL_PTR, "reasonable commands count exceeded");
