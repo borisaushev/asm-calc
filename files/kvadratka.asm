@@ -24,9 +24,9 @@ IN ; c
 POPREG CX
 
 ; a == 0 - hlt
-PUSHREG AX ; если a == 0 решаем линейное TODO
+PUSHREG AX ; если a == 0 решаем линейное
 PUSH 0
-JE :2;TODO
+JE :2; TODO
 
 
 CALL :4 ; считаем D
