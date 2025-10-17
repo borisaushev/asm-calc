@@ -54,7 +54,7 @@ const char* const ASM_SRC_PATH = "..\\files\\kvadratka.asm";
 const char* const BYTECODE_PR_PATH = "..\\files\\listing.lst";
 const char* const BYTECODE_PATH = "..\\files\\bytecode.bbc";
 
-const int VERSION = 19;
+const int VERSION = 20;
 const char* const SIGNATURA = "BB";
 const int SIGNATURA_BYTE = 0xBB;
 const int SIGNATURA_SIZE = 2;

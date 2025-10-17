@@ -5,6 +5,7 @@
 int main() {
     stack_t valuesStack = {};
     initStack(&valuesStack, 10);
+
     stack_t callStack = {};
     initStack(&callStack, 10);
 
