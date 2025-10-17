@@ -105,7 +105,7 @@ void dumpProcessor(processor_t* processor, FILE* dumpFile) {
     fflush(dumpFile);
 }
 
-void DPrintProcessor(processor_t *processor) {
+void DPrintProcessor(processor_t* processor) {
     assert(processor);
 
     DPRINTF("Processor:\n");

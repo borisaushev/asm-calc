@@ -8,7 +8,8 @@ int main(int argc, char *argv[]) {
         error = parseText(argv[1], &text);
         if (error != SUCCESS) {
             FREE_ALL(text.buf, text.pointer_arr);
-            return INVALID_INPUT;
+            PRINTERR("Unable to parse given file");
+            return error;
         }
     }
     else {
@@ -28,6 +29,6 @@ int main(int argc, char *argv[]) {
     }
 
     printf("\ncompilation finished\n");
-    printf("pretty output is written to file %s\n", LISTING_PATH);
-    printf("harsh-truth output is written to file %s\n", BYTECODE_PATH);
+    printf("listing is written to file %s\n", LISTING_PATH);
+    printf("byte output is written to file %s\n", BYTECODE_PATH);
 }

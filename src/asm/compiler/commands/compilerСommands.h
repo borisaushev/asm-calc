@@ -30,7 +30,7 @@ error_t jumpCommand(compilerInfo_t* compilerInfo);
 
 error_t parseLabel(compilerInfo_t* compilerInfo, char cmnd[MAX_COMMAND_LENGTH]);
 
-const compilerCmdInfo_t compilerCommandsInfo[COMMANDS_COUNT] = {
+const compilerCmdInfo_t COMPILER_COMMANDS_INFO[COMMANDS_COUNT] = {
     {ADD, "ADD", noArgsCommand, 0},
     {SUB, "SUB", noArgsCommand, 0},
     {MUL, "MUL", noArgsCommand, 0},

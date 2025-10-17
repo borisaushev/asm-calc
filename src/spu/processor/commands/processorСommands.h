@@ -8,7 +8,7 @@ typedef struct processorCmdInfo {
     error_t (*func)(processor_t* processor);
 } processorCmdInfo_t;
 
-// Arithmetic operations
+// Arithmetic
 error_t spuDiv(processor_t* processor);
 error_t spuAdd(processor_t* processor);
 error_t spuMul(processor_t* processor);
@@ -22,7 +22,7 @@ error_t spuIn(processor_t* processor);
 error_t spuPushReg(processor_t* processor);
 error_t spuPopReg(processor_t* processor);
 
-// Jump operations
+// Jumps
 error_t spuJmp(processor_t* processor);
 error_t spuJb(processor_t* processor);
 error_t spuJbe(processor_t* processor);
@@ -31,16 +31,16 @@ error_t spuJae(processor_t* processor);
 error_t spuJe(processor_t* processor);
 error_t spuJne(processor_t* processor);
 
-// Function call operations
+// Functions
 error_t spuCall(processor_t* processor);
 error_t spuRet(processor_t* processor);
 
-//RAM
+// RAM
 error_t spuPushMem(processor_t* processor);
 error_t spuPopMem(processor_t* processor);
 error_t spuDraw(processor_t* processor);
 
-const processorCmdInfo_t processorCommandsInfo[COMMANDS_COUNT] = {
+const processorCmdInfo_t PROCESSOR_COMMANDS_INFO[COMMANDS_COUNT] = {
     {ADD, spuAdd},
     {SUB, spuSub},
     {MUL, spuMul},

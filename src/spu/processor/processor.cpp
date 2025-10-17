@@ -39,7 +39,7 @@ static error_t runCommand(processor_t* processor, int *found, int *stopped) {
     *found = 0;
     *stopped = 0;
     for (int i = 0; i < COMMANDS_COUNT; i++) {
-        processorCmdInfo_t curCommand = processorCommandsInfo[i];
+        processorCmdInfo_t curCommand = PROCESSOR_COMMANDS_INFO[i];
         if (processor->commands[processor->CP] == curCommand.command) {
             *found = 1;
             if (curCommand.command == HLT) {

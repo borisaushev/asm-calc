@@ -56,7 +56,7 @@ static error_t compileCommand(compilerInfo_t *compilerInfo, int* found) {
     assert(found);
 
     for (int i = 0; i < COMMANDS_COUNT; i++) {
-        compilerCmdInfo_t curCommand = compilerCommandsInfo[i];
+        compilerCmdInfo_t curCommand = COMPILER_COMMANDS_INFO[i];
         if (strcmp(compilerInfo->curCommand, curCommand.commandStr) == 0) {
             compilerInfo->command = curCommand.command;
             SAFE_CALL(curCommand.func(compilerInfo));
@@ -106,7 +106,7 @@ static error_t makeListing(compilerInfo_t* compilerInfo) {
     fprintf(compilerInfo->listingFile, "%s V: %d\n", SIGNATURA, VERSION);
     for (size_t i = 0; i < compilerInfo->size; i++) {
         for (int ind = 0; ind < COMMANDS_COUNT; ind++) {
-            compilerCmdInfo_t curCommand = compilerCommandsInfo[ind];
+            compilerCmdInfo_t curCommand = COMPILER_COMMANDS_INFO[ind];
 
             if (compilerInfo->commandsArr[i] == curCommand.command) {
                 fprintf(compilerInfo->listingFile, "%03llu    ", i);
