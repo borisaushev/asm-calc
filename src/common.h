@@ -9,7 +9,10 @@
 #include <sys/stat.h>
 #include <filesystem>
 
-//TODO сделать отдельные enum-ы для разных мест
+// TODO сделать отдельные enum-ы для разных мест
+// TODO сделать массив структур, в процессоре оставить switch
+// Можно сделать отдельную функцию для арифметики и также для джампов и т.д.
+// Есть команда DRAW
 
 typedef enum errors {
     SUCCESS = 0,
@@ -52,9 +55,10 @@ const char* const ASM_SRC_PATH = "..\\files\\factorial.asm";
 const char* const BYTECODE_PR_PATH = "..\\files\\listing.lst";
 const char* const BYTECODE_PATH = "..\\files\\bytecode.bbc";
 
-const int VERSION = 15;
+const int VERSION = 16;
 const char* const SIGNATURA = "BB";
 const int SIGNATURA_BYTE = 0xBB;
+const int SIGNATURA_SIZE = 2;
 const int REGISTER_SIZE = 10;
 
 const int MAX_COMMAND_LENGTH = 100;
