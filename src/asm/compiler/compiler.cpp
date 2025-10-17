@@ -45,7 +45,7 @@ static error_t parseLineAndCommand(compilerInfo_t *compilerInfo, int* isBlank) {
         PRINT_ASM_LINE_ERR();
         RETURN_ERR(INVALID_INPUT, "invalid command");
     }
-    DPRINTF("read line[%d]: '%s' and command: '%s'\n", compilerInfo->i+1, compilerInfo->line, cmnd);
+    DPRINTF("read line[%d]: '%s' and command: '%s'\n", compilerInfo->i+1, compilerInfo->line, compilerInfo->curCommand);
     compilerInfo->line = compilerInfo->line+charsRead;
 
     return SUCCESS;
@@ -94,9 +94,6 @@ error_t compile(compilerInfo_t* compilerInfo) {
             PRINT_ASM_LINE_ERR();
             RETURN_ERR(INVALID_INPUT, "invalid command");
         }
-    }
-    if (strcmp(compilerInfo->curCommand, "HLT") != 0) {
-        RETURN_ERR(INVALID_INPUT, "PROGRAMM IS NOT FINITE, POSSIBLE TIME CURVATURE OF SPACE AND TIME");
     }
 
     compilerInfo->size = compilerInfo->arrIndex;

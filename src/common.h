@@ -49,8 +49,9 @@ typedef enum commands {
 } command_t;
 const int COMMANDS_COUNT = 23;
 
-const char* const ASM_SRC_PATH = "..\\files\\kvadratka.asm";
+// const char* const ASM_SRC_PATH = "..\\files\\kvadratka.asm";
 // const char* const ASM_SRC_PATH = "..\\files\\factorial.asm";
+const char* const ASM_SRC_PATH = "..\\files\\circle.asm";
 const char* const BYTECODE_PR_PATH = "..\\files\\listing.lst";
 const char* const BYTECODE_PATH = "..\\files\\bytecode.bbc";
 
@@ -64,7 +65,7 @@ const int MAX_COMMANDS = 1024;
 const int MAX_LABELS = 10;
 
 const int REGISTER_SIZE = 10;
-const int RAM_SIZE = 100;
+const int RAM_SIZE = 15*15;
 
 const int STACK_BASE_SIZE = 100;
 

@@ -376,10 +376,13 @@ error_t spuPopMem(processor_t* processor) {
 error_t spuDraw(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    for (int i = 0; i < RAM_SIZE; i++) {
-        printf("|%c", processor->RAM[i]);
-        if (i%100 == 0) {
-            printf("|\n");
+    for (int i = 1; i <= RAM_SIZE; i++) {
+        printf("|%c| ", processor->RAM[i - 1]);
+        if (i % (int) sqrt(RAM_SIZE) == 0) {
+            printf("\n");
         }
     }
+    printf("\n");
+
+    return SUCCESS;
 }

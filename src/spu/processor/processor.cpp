@@ -68,7 +68,12 @@ error_t runCmnds(processor_t* processor) {
         curCmnd = processor->commands[processor->CP];
         int found = 0;
         int stopped = 0;
-        runCommand(processor, &found, &stopped);
+
+        error_t result = runCommand(processor, &found, &stopped);
+        if (result != SUCCESS) {
+            PRINTERR("'%d' at index:%d\n", curCmnd, processor->CP);
+            return result;
+        }
 
         if (!found) {
             PRINTERR("UNKNOWN COMMAND '%d' at %s:%d\n", curCmnd, ASM_SRC_PATH, line + 1);

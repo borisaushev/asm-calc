@@ -34,7 +34,7 @@ static void parsePointers(char *text, int ptr_count, ptr_wrap_t** ptr_array) {
     assert(*ptr_array);
 
     char* curptr = &text[0];
-    char* nextLine = strchr(curptr, '\n');
+    char* nextLine = NULL;
     for (int i = 0; i < ptr_count; i++) {
         nextLine = strchr(curptr, '\n');
         assert(nextLine);
@@ -100,7 +100,7 @@ error_t parseText(const char *file_path, pointer_array_buf_t *arr_ptr) {
     int ptr_count = 0;
     countLines(text, bytes_read, &ptr_count);
 
-    ptr_wrap_t* ptr_array = (ptr_wrap_t*) calloc(ptr_count, sizeof(ptr_wrap_t));
+    ptr_wrap_t* ptr_array = (ptr_wrap_t*) calloc((size_t) ptr_count, sizeof(ptr_wrap_t));
     parsePointers(text, ptr_count, &ptr_array);
 
     assert(text[bytes_read + 1] == '\0');
