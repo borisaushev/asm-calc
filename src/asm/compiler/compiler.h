@@ -19,6 +19,7 @@ typedef struct compilerInfo {
     int labels[MAX_LABELS];
     int unknownLabels;
     char regVal;
+    char curCommand[MAX_COMMAND_LENGTH];
 } compilerInfo_t;
 
 error_t openFiles(FILE** targetPr, FILE** targetStreamBytes);

@@ -18,11 +18,11 @@ typedef struct compilerCmdInfo {
     const int argc;
 } compilerCmdInfo_t;
 
-error_t addNoArgsCommand(compilerInfo_t* compilerInfo);
+error_t noArgsCommand(compilerInfo_t* compilerInfo);
 
 error_t getRegVal(compilerInfo_t* compilerInfo);
 
-error_t modifyReg(compilerInfo_t* compilerInfo);
+error_t regParam(compilerInfo_t* compilerInfo);
 
 error_t pushCmndAndValue(compilerInfo_t* compilerInfo);
 
@@ -31,16 +31,16 @@ error_t jumpCommand(compilerInfo_t* compilerInfo);
 error_t parseLabel(compilerInfo_t* compilerInfo, char cmnd[MAX_COMMAND_LENGTH]);
 
 const compilerCmdInfo_t compilerCommandsInfo[COMMANDS_COUNT] = {
-    {ADD, "ADD", addNoArgsCommand, 0},
-    {SUB, "SUB", addNoArgsCommand, 0},
-    {MUL, "MUL", addNoArgsCommand, 0},
-    {DIV, "DIV", addNoArgsCommand, 0},
-    {SQRT, "SQRT", addNoArgsCommand, 0},
-    {OUT, "OUT", addNoArgsCommand, 0},
+    {ADD, "ADD", noArgsCommand, 0},
+    {SUB, "SUB", noArgsCommand, 0},
+    {MUL, "MUL", noArgsCommand, 0},
+    {DIV, "DIV", noArgsCommand, 0},
+    {SQRT, "SQRT", noArgsCommand, 0},
+    {OUT, "OUT", noArgsCommand, 0},
     {PUSH, "PUSH", pushCmndAndValue, 1},
-    {IN, "IN", addNoArgsCommand, 0},
-    {PUSHREG, "PUSHREG", modifyReg, 1},
-    {POPREG, "POPREG", modifyReg, 1},
+    {IN, "IN", noArgsCommand, 0},
+    {PUSHREG, "PUSHREG", regParam, 1},
+    {POPREG, "POPREG", regParam, 1},
     {JMP, "JMP", jumpCommand, 1},
     {JB, "JB", jumpCommand, 1},
     {JBE, "JBE", jumpCommand, 1},
@@ -49,8 +49,11 @@ const compilerCmdInfo_t compilerCommandsInfo[COMMANDS_COUNT] = {
     {JE, "JE", jumpCommand, 1},
     {JNE, "JNE", jumpCommand, 1},
     {CALL, "CALL", jumpCommand, 1},
-    {RET, "RET", addNoArgsCommand, 0},
-    {HLT, "HLT", addNoArgsCommand, 0},
+    {RET, "RET", noArgsCommand, 0},
+    {PUSHMEM, "PUSHMEM", regParam, 1},
+    {POPMEM, "POPMEM", regParam, 1},
+    {DRAW, "DRAW", noArgsCommand, 0},
+    {HLT, "HLT", noArgsCommand, 0},
 };
 
 #endif //SRC_UTILS_STACK_COMMANDS_H

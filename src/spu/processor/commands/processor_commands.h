@@ -35,6 +35,11 @@ error_t spuJne(processor_t* processor);
 error_t spuCall(processor_t* processor);
 error_t spuRet(processor_t* processor);
 
+//RAM
+error_t spuPushMem(processor_t* processor);
+error_t spuPopMem(processor_t* processor);
+error_t spuDraw(processor_t* processor);
+
 const processorCmdInfo_t processorCommandsInfo[COMMANDS_COUNT] = {
     {ADD, spuAdd},
     {SUB, spuSub},
@@ -55,6 +60,9 @@ const processorCmdInfo_t processorCommandsInfo[COMMANDS_COUNT] = {
     {JNE, spuJne},
     {CALL, spuCall},
     {RET, spuRet},
+    {PUSHMEM, spuPushMem},
+    {POPMEM, spuPopMem},
+    {DRAW, spuDraw},
     {HLT, NULL}
 };
 

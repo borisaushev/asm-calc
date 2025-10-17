@@ -34,7 +34,7 @@ error_t parseCommands(const char* filename, processor_t* processor) {
 }
 
 static error_t runCommand(processor_t* processor, int *found, int *stopped) {
-    assert(processor);
+    SAFE_CALL(verifyProcessor(processor));
 
     *found = 0;
     *stopped = 0;
@@ -55,8 +55,7 @@ static error_t runCommand(processor_t* processor, int *found, int *stopped) {
 }
 
 error_t runCmnds(processor_t* processor) {
-    assert(processor);
-    assert(processor->valuesStack);
+    SAFE_CALL(verifyProcessor(processor));
 
     #ifdef DEBUG
         DPrintProcessor(processor);

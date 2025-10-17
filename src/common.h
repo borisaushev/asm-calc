@@ -42,8 +42,12 @@ typedef enum commands {
     JNE = 17,
     CALL = 18,
     RET = 19,
-    HLT = 20,
+    PUSHMEM = 20,
+    POPMEM = 21,
+    DRAW = 22,
+    HLT = 32,
 } command_t;
+const int COMMANDS_COUNT = 23;
 
 const char* const ASM_SRC_PATH = "..\\files\\kvadratka.asm";
 // const char* const ASM_SRC_PATH = "..\\files\\factorial.asm";
@@ -58,7 +62,6 @@ const int SIGNATURA_SIZE = 2;
 const int MAX_COMMAND_LENGTH = 100;
 const int MAX_COMMANDS = 1024;
 const int MAX_LABELS = 10;
-const int COMMANDS_COUNT = 20;
 
 const int REGISTER_SIZE = 10;
 const int RAM_SIZE = 100;

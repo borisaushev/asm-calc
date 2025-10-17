@@ -18,12 +18,14 @@ error_t openFiles(FILE** targetPr, FILE** targetStreamBytes) {
 }
 
 static char* findFirstSymb(char* str) {
+    assert(str);
+
     for (; *str != '\0' && isspace(*str); str++) {
     }
     return str;
 }
 
-static error_t parseLineAndCommand(compilerInfo_t *compilerInfo, char cmnd[MAX_COMMAND_LENGTH], int* isBlank) {
+static error_t parseLineAndCommand(compilerInfo_t *compilerInfo, int* isBlank) {
     assert(compilerInfo);
     assert(isBlank);
 
@@ -39,7 +41,7 @@ static error_t parseLineAndCommand(compilerInfo_t *compilerInfo, char cmnd[MAX_C
 
     *isBlank = 0;
     int charsRead = -1;
-    if (sscanf(compilerInfo->line, "%s%n", cmnd, &charsRead) != 1) {
+    if (sscanf(compilerInfo->line, "%s%n", compilerInfo->curCommand, &charsRead) != 1) {
         PRINT_ASM_LINE_ERR();
         RETURN_ERR(INVALID_INPUT, "invalid command");
     }
@@ -49,10 +51,13 @@ static error_t parseLineAndCommand(compilerInfo_t *compilerInfo, char cmnd[MAX_C
     return SUCCESS;
 }
 
-static error_t compileCommand(compilerInfo_t *compilerInfo, char cmnd[MAX_COMMAND_LENGTH], int* found) {
+static error_t compileCommand(compilerInfo_t *compilerInfo, int* found) {
+    assert(compilerInfo);
+    assert(found);
+
     for (int i = 0; i < COMMANDS_COUNT; i++) {
         compilerCmdInfo_t curCommand = compilerCommandsInfo[i];
-        if (strcmp(cmnd, curCommand.commandStr) == 0) {
+        if (strcmp(compilerInfo->curCommand, curCommand.commandStr) == 0) {
             compilerInfo->command = curCommand.command;
             SAFE_CALL(curCommand.func(compilerInfo));
 
@@ -71,27 +76,26 @@ error_t compile(compilerInfo_t* compilerInfo) {
     compilerInfo->i = 0;
     compilerInfo->unknownLabels = 0;
 
-    char cmnd[MAX_COMMAND_LENGTH] = {};
     for (; compilerInfo->i < compilerInfo->text->lines_count; compilerInfo->i++) {
         int isBlank = 0;
-        SAFE_CALL(parseLineAndCommand(compilerInfo, cmnd, &isBlank));
+        SAFE_CALL(parseLineAndCommand(compilerInfo, &isBlank));
         if (isBlank) {
             continue;
         }
-        if (cmnd[0] == ':') {
-            SAFE_CALL(parseLabel(compilerInfo, cmnd));
+        if (compilerInfo->curCommand[0] == ':') {
+            SAFE_CALL(parseLabel(compilerInfo, compilerInfo->curCommand));
             continue;
         }
 
         int found = 0;
-        SAFE_CALL(compileCommand(compilerInfo, cmnd, &found));
+        SAFE_CALL(compileCommand(compilerInfo, &found));
 
         if (!found) {
             PRINT_ASM_LINE_ERR();
             RETURN_ERR(INVALID_INPUT, "invalid command");
         }
     }
-    if (strcmp(cmnd, "HLT") != 0) {
+    if (strcmp(compilerInfo->curCommand, "HLT") != 0) {
         RETURN_ERR(INVALID_INPUT, "PROGRAMM IS NOT FINITE, POSSIBLE TIME CURVATURE OF SPACE AND TIME");
     }
 

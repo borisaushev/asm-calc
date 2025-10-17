@@ -28,17 +28,24 @@ error_t initProcessor(processor_t* processor, stack_t* valuesStack, stack_t* cal
 }
 
 error_t verifyProcessor(processor_t* processor) {
-    assert(processor);
+    if (processor == NULL) {
+        RETURN_ERR(NULL_PTR, "processor is NULL");
+    }
 
     dumpProcessor(processor);
     if (processor->valuesStack == NULL) {
         RETURN_ERR(NULL_PTR, "stack ptr is null");
     }
     STACK_VALID(processor->valuesStack);
+
     if (processor->callStack == NULL) {
         RETURN_ERR(NULL_PTR, "stack ptr is null");
     }
     STACK_VALID(processor->callStack);
+
+    if (processor->RAM == NULL) {
+        RETURN_ERR(NULL_PTR, "ram pointer is null");
+    }
 
     if (processor->commandsCount > MAX_COMMANDS) {
         RETURN_ERR(NULL_PTR, "reasonable commands count exceeded");
@@ -51,6 +58,8 @@ error_t verifyProcessor(processor_t* processor) {
 }
 
 void dumpProcessor(processor_t* processor, FILE* dumpFile) {
+    assert(processor);
+
     fprintf(dumpFile, "Processor dump:\n");
     fprintf(dumpFile, "curI: %llu, commands count: %llu\n", processor->CP, processor->commandsCount);
 
@@ -86,10 +95,19 @@ void dumpProcessor(processor_t* processor, FILE* dumpFile) {
     stackDumpStream(processor->callStack, validateStack(processor->callStack), dumpFile,
         __FILE__, __LINE__, __FUNCTION__);
 
+    fprintf(dumpFile, "ram:\n");
+    fprintf(dumpFile, "{ ");
+    for (int i = 0; i < RAM_SIZE; i++) {
+        fprintf(dumpFile, "[%i]: %d, ", i, processor->RAM[i]);
+    }
+    fprintf(dumpFile, " }\n");
+
     fflush(dumpFile);
 }
 
 void DPrintProcessor(processor_t *processor) {
+    assert(processor);
+
     DPRINTF("Processor:\n");
     DPRINTF("curI: %llu, commands count: %llu\n", processor->CP, processor->commandsCount);
 

@@ -1,6 +1,6 @@
 #include "compiler_commands.h"
 
-error_t addNoArgsCommand(compilerInfo_t* compilerInfo) {
+error_t noArgsCommand(compilerInfo_t* compilerInfo) {
     assert(compilerInfo);
 
     size_t len = strlen(compilerInfo->line);
@@ -36,7 +36,7 @@ error_t getRegVal(compilerInfo_t* compilerInfo) {
     return SUCCESS;
 }
 
-error_t modifyReg(compilerInfo_t* compilerInfo) {
+error_t regParam(compilerInfo_t* compilerInfo) {
     assert(compilerInfo);
 
     SAFE_CALL(getRegVal(compilerInfo));
