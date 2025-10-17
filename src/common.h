@@ -50,9 +50,10 @@ typedef enum commands {
 const int COMMANDS_COUNT = 23;
 
 // const char* const ASM_SRC_PATH = "..\\files\\kvadratka.asm";
-// const char* const ASM_SRC_PATH = "..\\files\\factorial.asm";
-const char* const ASM_SRC_PATH = "..\\files\\circle.asm";
-const char* const BYTECODE_PR_PATH = "..\\files\\listing.lst";
+const char* const ASM_SRC_PATH = "..\\files\\factorial.asm";
+// const char* const ASM_SRC_PATH = "..\\files\\circle.asm";
+
+const char* const LISTING_PATH = "..\\files\\listing.lst";
 const char* const BYTECODE_PATH = "..\\files\\bytecode.bbc";
 
 const int VERSION = 23;

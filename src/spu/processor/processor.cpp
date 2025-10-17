@@ -3,7 +3,7 @@
 #include "compiler.h"
 #include "line_reader.h"
 #include "stack.h"
-#include "commands/processor_commands.h"
+#include "commands/processorСommands.h"
 #include "struct/processorStruct.h"
 
 error_t parseCommands(const char* filename, processor_t* processor) {

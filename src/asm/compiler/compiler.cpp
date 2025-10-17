@@ -1,13 +1,13 @@
 #include "compiler.h"
 
-#include "compiler_commands.h"
+#include "compilerСommands.h"
 
 
-error_t openFiles(FILE** targetPr, FILE** targetStreamBytes) {
+error_t openListingAndByteFiles(FILE** targetPr, FILE** targetStreamBytes) {
     assert(targetPr);
     assert(targetStreamBytes);
 
-    *targetPr = fopen(BYTECODE_PR_PATH, "wb");
+    *targetPr = fopen(LISTING_PATH, "wb");
     *targetStreamBytes = fopen(BYTECODE_PATH, "wb");
 
     if (!*targetStreamBytes || !*targetPr) {
@@ -103,25 +103,25 @@ error_t compile(compilerInfo_t* compilerInfo) {
 static error_t makeListing(compilerInfo_t* compilerInfo) {
     assert(compilerInfo);
 
-    fprintf(compilerInfo->targetPr, "%s V: %d\n", SIGNATURA, VERSION);
+    fprintf(compilerInfo->listingFile, "%s V: %d\n", SIGNATURA, VERSION);
     for (size_t i = 0; i < compilerInfo->size; i++) {
         for (int ind = 0; ind < COMMANDS_COUNT; ind++) {
             compilerCmdInfo_t curCommand = compilerCommandsInfo[ind];
 
             if (compilerInfo->commandsArr[i] == curCommand.command) {
-                fprintf(compilerInfo->targetPr, "%03llu    ", i);
+                fprintf(compilerInfo->listingFile, "%03llu    ", i);
                 if (curCommand.argc == 0) {
-                    fprintf(compilerInfo->targetPr, "%.8d    ", compilerInfo->commandsArr[i]);
+                    fprintf(compilerInfo->listingFile, "%.8d    ", compilerInfo->commandsArr[i]);
                 }
                 else if (curCommand.argc == 1) {
-                    fprintf(compilerInfo->targetPr, "%.3d  %.3d    ", compilerInfo->commandsArr[i], compilerInfo->commandsArr[i + 1]);
+                    fprintf(compilerInfo->listingFile, "%.3d  %.3d    ", compilerInfo->commandsArr[i], compilerInfo->commandsArr[i + 1]);
                     i++;
                 }
                 else {
                     RETURN_ERR(INVALID_INPUT, "invalid argument count");
                 }
 
-                fprintf(compilerInfo->targetPr, "%1.10s\n", curCommand.commandStr);
+                fprintf(compilerInfo->listingFile, "%1.10s\n", curCommand.commandStr);
                 break;
             }
         }
@@ -130,28 +130,29 @@ static error_t makeListing(compilerInfo_t* compilerInfo) {
     return SUCCESS;
 }
 
+void initCompilerInfo(pointer_array_buf_t *text, FILE *listingFile, compilerInfo_t &compilerInfo) {
+    compilerInfo.listingFile = listingFile;
+    compilerInfo.text = text;
+    compilerInfo.command = HLT;
+    compilerInfo.size = 0;
+    compilerInfo.arrIndex = SIGNATURA_SIZE;
+    compilerInfo.i = 0;
+    compilerInfo.line = NULL;
+    compilerInfo.unknownLabels = 0;
+    compilerInfo.regVal = 'Z';
+}
+
 error_t compileAsm(pointer_array_buf_t* text) {
     assert(text);
 
-    FILE *targetPr = NULL;
+    FILE *listingFile = NULL;
     FILE *targetStreamBytes = NULL;
-    SAFE_CALL(openFiles(&targetPr, &targetStreamBytes));
+    SAFE_CALL(openListingAndByteFiles(&listingFile, &targetStreamBytes));
 
     DPRINTF("lines count: %d\n", text->lines_count);
 
-    compilerInfo_t compilerInfo = {
-        .targetPr = targetPr,
-        .text = text,
-        .command = HLT,
-        .commandsArr = {},
-        .size = 0,
-        .arrIndex = SIGNATURA_SIZE,
-        .i = 0,
-        .line = NULL,
-        .labels = {},
-        .unknownLabels = 0,
-        .regVal = 'Z'
-    };
+    compilerInfo_t compilerInfo = {};
+    initCompilerInfo(text, listingFile, compilerInfo);
 
     for (int i = 0; i < MAX_LABELS; i++) {
         compilerInfo.labels[i] = -1;
@@ -174,7 +175,7 @@ error_t compileAsm(pointer_array_buf_t* text) {
     fwrite(&VERSION, sizeof(int), 1, targetStreamBytes);
     fwrite(compilerInfo.commandsArr, sizeof(int), compilerInfo.size, targetStreamBytes);
 
-    fclose(targetPr);
+    fclose(listingFile);
     fclose(targetStreamBytes);
 
     return SUCCESS;

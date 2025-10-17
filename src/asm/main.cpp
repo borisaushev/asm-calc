@@ -28,6 +28,6 @@ int main(int argc, char *argv[]) {
     }
 
     printf("\ncompilation finished\n");
-    printf("pretty output is written to file %s\n", BYTECODE_PR_PATH);
+    printf("pretty output is written to file %s\n", LISTING_PATH);
     printf("harsh-truth output is written to file %s\n", BYTECODE_PATH);
 }

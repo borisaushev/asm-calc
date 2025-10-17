@@ -8,7 +8,7 @@
 #include "stack.h"
 
 typedef struct compilerInfo {
-    FILE* targetPr;
+    FILE* listingFile;
     pointer_array_buf_t* text;
     command_t command;
     int commandsArr[MAX_COMMANDS ];
@@ -22,7 +22,7 @@ typedef struct compilerInfo {
     char curCommand[MAX_COMMAND_LENGTH];
 } compilerInfo_t;
 
-error_t openFiles(FILE** targetPr, FILE** targetStreamBytes);
+error_t openListingAndByteFiles(FILE** targetPr, FILE** targetStreamBytes);
 
 error_t compileAsm(pointer_array_buf_t* text);
 
