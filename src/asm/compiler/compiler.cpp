@@ -18,7 +18,7 @@ error_t openFiles(FILE *&targetPr, FILE *&targetStreamBytes) {
     return SUCCESS;
 }
 
-static error_t addCmnd(compilerInfo_t* compilerInfo) {
+error_t addCmnd(compilerInfo_t* compilerInfo) {
     fprintf(compilerInfo->targetPr, "%03llu    ", compilerInfo->arrIndex);
     size_t len = strlen(compilerInfo->line);
     for (size_t ch = 0; ch < len; ch++) {
@@ -33,7 +33,7 @@ static error_t addCmnd(compilerInfo_t* compilerInfo) {
     return SUCCESS;
 }
 
-static error_t getRegVal(compilerInfo_t* compilerInfo) {
+error_t getRegVal(compilerInfo_t* compilerInfo) {
     int read = 0;
     size_t len = strlen(compilerInfo->line);
     int scanCount = sscanf(compilerInfo->line, " %cX%n", &(compilerInfo->regVal), &read);
@@ -52,7 +52,7 @@ static error_t getRegVal(compilerInfo_t* compilerInfo) {
     return SUCCESS;
 }
 
-static error_t modifyReg(compilerInfo_t* compilerInfo) {
+error_t modifyReg(compilerInfo_t* compilerInfo) {
     fprintf(compilerInfo->targetPr, "%03llu    ", compilerInfo->arrIndex);
 
     SAFE_CALL(getRegVal(compilerInfo));
@@ -74,7 +74,7 @@ static error_t modifyReg(compilerInfo_t* compilerInfo) {
     return SUCCESS;
 }
 
-static error_t pushCmndAndValue(compilerInfo_t* compilerInfo) {
+error_t pushCmndAndValue(compilerInfo_t* compilerInfo) {
     fprintf(compilerInfo->targetPr, "%03llu    ", compilerInfo->arrIndex);
 
     int pushVal = POISON;
@@ -104,7 +104,7 @@ static error_t pushCmndAndValue(compilerInfo_t* compilerInfo) {
     return SUCCESS;
 }
 
-static error_t jump(compilerInfo_t* compilerInfo) {
+error_t jump(compilerInfo_t* compilerInfo) {
     fprintf(compilerInfo->targetPr, "%03llu    ", compilerInfo->arrIndex);
 
     int jmpVal = POISON;
@@ -166,134 +166,83 @@ static char* findFirstSymb(char* str) {
     return str;
 }
 
+static error_t parseLabel(compilerInfo_t *compilerInfo, char cmnd[MAX_COMMAND_LENGTH]) {
+    int label = -1, read = 0;
+    size_t len = strlen(cmnd);
+    int scanCount = sscanf(cmnd, " :%d%n", &label, &read);
+    if (scanCount == 1 && label >= 0 && label < MAX_LABELS) {
+        for (size_t ch = 0; (size_t) read + ch < len; ch++) {
+            if (!isspace(cmnd[(size_t) read + ch])) {
+                PRINT_ASM_LINE_ERR();
+                RETURN_ERR(INVALID_INPUT, "unexpected parameter");
+            }
+        }
+        DPRINTF("read label: '%d', with arr index: '%llu'\n", label, compilerInfo->arrIndex);
+        compilerInfo->labels[label] = (int) compilerInfo->arrIndex;
+        return SUCCESS;
+    }
+
+    PRINT_ASM_LINE_ERR();
+    RETURN_ERR(INVALID_INPUT, "invalid label");
+}
+
+static error_t parseLineAndCommand(compilerInfo_t *compilerInfo, char cmnd[MAX_COMMAND_LENGTH], int* isBlank) {
+    compilerInfo->line = strupr(findFirstSymb(compilerInfo->text->pointer_arr[compilerInfo->i].ptr));
+    char* commentIndex = strchr(compilerInfo->line, ';'); // коменты ингнорим
+    if (commentIndex != NULL) {
+        *commentIndex = '\0';
+    }
+    if (compilerInfo->line[0] == '\0') {
+        *isBlank = 1;
+        return SUCCESS;
+    }
+
+    *isBlank = 0;
+    int charsRead = -1;
+    if (sscanf(compilerInfo->line, "%s%n", cmnd, &charsRead) != 1) {
+        PRINT_ASM_LINE_ERR();
+        RETURN_ERR(INVALID_INPUT, "invalid command");
+    }
+    DPRINTF("read line[%d]: '%s' and command: '%s'\n", compilerInfo->i+1, compilerInfo->line, cmnd);
+    compilerInfo->line = compilerInfo->line+charsRead;
+
+    return SUCCESS;
+}
+
 error_t writeCommands(compilerInfo_t* compilerInfo) {
     compilerInfo->arrIndex = 0;
     compilerInfo->i = 0;
+    compilerInfo->unknownLabels = 0;
     char cmnd[MAX_COMMAND_LENGTH] = {};
     for (; compilerInfo->i < compilerInfo->text->lines_count; compilerInfo->i++) {
-        compilerInfo->line = strupr(findFirstSymb(compilerInfo->text->pointer_arr[compilerInfo->i].ptr));
-        char* commentIndex = strchr(compilerInfo->line, ';'); // коменты ингнорим
-        if (commentIndex != NULL) {
-            *commentIndex = '\0';
-        }
-        if (compilerInfo->line[0] == '\0') {
+        int isBlank = 0;
+        SAFE_CALL(parseLineAndCommand(compilerInfo, cmnd, &isBlank));
+        if (isBlank) {
             continue;
         }
 
-        int charsRead = -1;
-        if (sscanf(compilerInfo->line, "%s%n", cmnd, &charsRead) != 1) {
-            PRINT_ASM_LINE_ERR();
-            RETURN_ERR(INVALID_INPUT, "invalid command");
+        if (cmnd[0] == ':') {
+            SAFE_CALL(parseLabel(compilerInfo, cmnd));
+            continue;
         }
-        DPRINTF("read line[%d]: '%s' and command: '%s'\n", compilerInfo->i+1, compilerInfo->line, cmnd);
-        compilerInfo->line = compilerInfo->line+charsRead;
 
-        if (strcmp(cmnd, "ADD") == 0) {
-            compilerInfo->command = ADD;
-            SAFE_CALL(addCmnd(compilerInfo));
-        }
-        else if (strcmp(cmnd, "SUB") == 0) {
-            compilerInfo->command = SUB;
-            SAFE_CALL(addCmnd(compilerInfo));
-        }
-        else if (strcmp(cmnd, "MUL") == 0) {
-            compilerInfo->command = MUL;
-            SAFE_CALL(addCmnd(compilerInfo));
-        }
-        else if (strcmp(cmnd, "DIV") == 0) {
-            compilerInfo->command = DIV;
-            SAFE_CALL(addCmnd(compilerInfo));
-        }
-        else if (strcmp(cmnd, "SQRT") == 0) {
-            compilerInfo->command = SQRT;
-            SAFE_CALL(addCmnd(compilerInfo));
-        }
-        else if (strcmp(cmnd, "OUT") == 0) {
-            compilerInfo->command = OUT;
-            SAFE_CALL(addCmnd(compilerInfo));
-        }
-        else if (strcmp(cmnd, "PUSH") == 0) {
-            compilerInfo->command = PUSH;
-            SAFE_CALL(pushCmndAndValue(compilerInfo));
-        }
-        else if (strcmp(cmnd, "IN") == 0) {
-            compilerInfo->command = IN;
-            SAFE_CALL(addCmnd(compilerInfo));
-        }
-        else if (strcmp(cmnd, "PUSHREG") == 0) {
-            compilerInfo->command = PUSHREG;
-            SAFE_CALL(modifyReg(compilerInfo));
-        }
-        else if (strcmp(cmnd, "POPREG") == 0) {
-            compilerInfo->command = POPREG;
-            SAFE_CALL(modifyReg(compilerInfo));
-        }
-        else if (strcmp(cmnd, "JMP") == 0) {
-            compilerInfo->command = JMP;
-            SAFE_CALL(jump(compilerInfo));
-        }
-        else if (strcmp(cmnd, "JB") == 0) {
-            compilerInfo->command = JB;
-            SAFE_CALL(jump(compilerInfo));
-        }
-        else if (strcmp(cmnd, "JBE") == 0) {
-            compilerInfo->command = JBE;
-            SAFE_CALL(jump(compilerInfo));
-        }
-        else if (strcmp(cmnd, "JA") == 0) {
-            compilerInfo->command = JA;
-            SAFE_CALL(jump(compilerInfo));
-        }
-        else if (strcmp(cmnd, "JAE") == 0) {
-            compilerInfo->command = JAE;
-            SAFE_CALL(jump(compilerInfo));
-        }
-        else if (strcmp(cmnd, "JE") == 0) {
-            compilerInfo->command = JE;
-            SAFE_CALL(jump(compilerInfo));
-        }
-        else if (strcmp(cmnd, "JNE") == 0) {
-            compilerInfo->command = JNE;
-            SAFE_CALL(jump(compilerInfo));
-        }
-        else if (strcmp(cmnd, "CALL") == 0) {
-            compilerInfo->command = CALL;
-            SAFE_CALL(jump(compilerInfo));
-        }
-        else if (strcmp(cmnd, "RET") == 0) {
-            compilerInfo->command = RET;
-            SAFE_CALL(addCmnd(compilerInfo));
-        }
-        else if (cmnd[0] == ':') {
-            int label = -1, read = 0;
-            size_t len = strlen(cmnd);
-            int scanCount = sscanf(cmnd, " :%d%n", &label, &read);
-            if (scanCount == 1 && label >= 0 && label < MAX_LABELS) {
-                for (size_t ch = 0; (size_t) read + ch < len; ch++) {
-                    if (!isspace(cmnd[(size_t) read + ch])) {
-                        PRINT_ASM_LINE_ERR();
-                        RETURN_ERR(INVALID_INPUT, "unexpected parameter");
-                    }
-                }
-                DPRINTF("read label: '%d', with arr index: '%llu'\n", label, compilerInfo->arrIndex);
-                compilerInfo->labels[label] = (int) compilerInfo->arrIndex;
-                continue;
+        int found = 0;
+        for (int ind = 0; ind < COMMANDS_COUNT; ind++) {
+            commandsInfo_t curCmndFunc = commandsFuncs[ind];
+            if (strcmp(cmnd, curCmndFunc.commandStr) == 0) {
+                compilerInfo->command = curCmndFunc.command;
+                SAFE_CALL(curCmndFunc.func(compilerInfo));
+
+                fprintf(compilerInfo->targetPr, "%1.10s\n", cmnd);
+                compilerInfo->arrIndex++;
+                found = 1;
+                break;
             }
-
-            PRINT_ASM_LINE_ERR();
-            RETURN_ERR(INVALID_INPUT, "invalid label");
         }
-        else if (strcmp(cmnd, "HLT") == 0) {
-            compilerInfo->command = HLT;
-            SAFE_CALL(addCmnd(compilerInfo));
-        }
-        else {
+        if (!found) {
             PRINT_ASM_LINE_ERR();
             RETURN_ERR(INVALID_INPUT, "invalid command");
         }
-        fprintf(compilerInfo->targetPr, "%1.10s\n", cmnd);
-
-        compilerInfo->arrIndex++;
     }
     if (strcmp(cmnd, "HLT") != 0) {
         RETURN_ERR(INVALID_INPUT, "PROGRAMM IS NOT FINITE, POSSIBLE TIME CURVATURE OF SPACE AND TIME");
