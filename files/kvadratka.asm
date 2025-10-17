@@ -24,25 +24,13 @@ IN ; c
 POPREG CX
 
 ; a == 0 - hlt
-PUSHREG AX ; если a == 0 конец
+PUSHREG AX ; если a == 0 решаем линейное TODO
 PUSH 0
 JE :2;TODO
 
-PUSHREG BX ; b^2
-PUSHREG BX
-MUL
 
-PUSH 4 ; 4*a*c
-PUSHREG AX
-PUSHREG CX
-MUL
-MUL
-
-SUB ; b^2 - 4*a*c
-
-POPREG DX ; записали квадрат D
-
-PUSHREG DX ; если D^2 < 0 конец
+CALL :4 ; считаем D
+PUSHREG DX ; если D < 0 конец
 PUSH 0
 JB :1 ; TODO
 
@@ -54,7 +42,6 @@ POPREG DX ; записали sqrt(D)
 PUSHREG DX
 PUSH 0
 JNE :3; TODO
-
 
 ; если DX == 0
 PUSH 1 ; вывод 1
@@ -111,12 +98,46 @@ DIV ; (-b-D)/2*a
 OUT ; выводим x2
 HLT
 
-:2
-PUSH -1
+:1
+PUSH 0
 OUT
 HLT
 
-:1
+:4
+PUSHREG BX ; b^2
+PUSHREG BX
+MUL
+
+PUSH 4 ; 4*a*c
+PUSHREG AX
+PUSHREG CX
+MUL
+MUL
+
+SUB ; b^2 - 4*a*c
+
+POPREG DX ; записали квадрат D
+RET
+
+:2
+; bx + c = 0
 PUSH 0
+PUSHREG BX
+JE :5 ;Если b = 0
+
+;иначе корень - -c/b
+PUSHREG CX
+PUSH -1 ;-C
+MUL
+PUSHREG BX
+DIV ;-C/B
+OUT
+HLT
+
+:5
+PUSHREG CX
+PUSH 0
+JNE :1 ; c != 0 : 0 решений
+PUSH -1 ; c = 0, бесконечно решений
 OUT
 HLT

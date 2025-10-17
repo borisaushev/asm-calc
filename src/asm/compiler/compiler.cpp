@@ -220,7 +220,6 @@ error_t writeCommands(compilerInfo_t* compilerInfo) {
         if (isBlank) {
             continue;
         }
-
         if (cmnd[0] == ':') {
             SAFE_CALL(parseLabel(compilerInfo, cmnd));
             continue;
