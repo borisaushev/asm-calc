@@ -11,6 +11,13 @@
         PRINTERR(":%d\n\n", compilerInfo->i+1); \
     END
 
+typedef struct compilerCmdInfo {
+    const command_t command;
+    const char* const commandStr;
+    error_t (*func)(compilerInfo_t* compilerInfo);
+    const int argc;
+} compilerCmdInfo_t;
+
 error_t addNoArgsCommand(compilerInfo_t* compilerInfo);
 
 error_t getRegVal(compilerInfo_t* compilerInfo);
@@ -23,7 +30,7 @@ error_t jumpCommand(compilerInfo_t* compilerInfo);
 
 error_t parseLabel(compilerInfo_t* compilerInfo, char cmnd[MAX_COMMAND_LENGTH]);
 
-const commandsInfo_t commandsFuncs[COMMANDS_COUNT] = {
+const compilerCmdInfo_t compilerCommandsInfo[COMMANDS_COUNT] = {
     {ADD, "ADD", addNoArgsCommand, 0},
     {SUB, "SUB", addNoArgsCommand, 0},
     {MUL, "MUL", addNoArgsCommand, 0},

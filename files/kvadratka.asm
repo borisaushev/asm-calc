@@ -129,9 +129,12 @@ PUSHREG BX
 JE :5 ;Если b = 0
 
 ;иначе корень - -c/b
+PUSH 1
+OUT
+
 PUSHREG CX
-PUSH -1 ;-C
-MUL
+PUSH -1
+MUL ;-C
 PUSHREG BX
 DIV ;-C/B
 OUT

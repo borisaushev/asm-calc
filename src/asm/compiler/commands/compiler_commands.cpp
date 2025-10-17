@@ -1,4 +1,4 @@
-#include "commands.h"
+#include "compiler_commands.h"
 
 error_t addNoArgsCommand(compilerInfo_t* compilerInfo) {
     assert(compilerInfo);

@@ -1,4 +1,4 @@
-#include "commands.h"
+#include "processor_commands.h"
 
 
 static error_t getJmpIndex(processor_t* processor, int *index) {

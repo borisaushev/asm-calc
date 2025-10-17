@@ -3,6 +3,11 @@
 #include "common.h"
 #include "processorStruct.h"
 
+typedef struct processorCmdInfo {
+    const command_t command;
+    error_t (*func)(processor_t* processor);
+} processorCmdInfo_t;
+
 // Arithmetic operations
 error_t spuDiv(processor_t* processor);
 error_t spuAdd(processor_t* processor);
@@ -29,5 +34,28 @@ error_t spuJne(processor_t* processor);
 // Function call operations
 error_t spuCall(processor_t* processor);
 error_t spuRet(processor_t* processor);
+
+const processorCmdInfo_t processorCommandsInfo[COMMANDS_COUNT] = {
+    {ADD, spuAdd},
+    {SUB, spuSub},
+    {MUL, spuMul},
+    {DIV, spuDiv},
+    {SQRT, spuSqrt},
+    {OUT, spuOut},
+    {PUSH, spuPush},
+    {IN, spuIn},
+    {PUSHREG, spuPushReg},
+    {POPREG, spuPopReg},
+    {JMP, spuJmp},
+    {JB,  spuJb},
+    {JBE, spuJbe},
+    {JA,  spuJa},
+    {JAE, spuJae},
+    {JE,  spuJe},
+    {JNE, spuJne},
+    {CALL, spuCall},
+    {RET, spuRet},
+    {HLT, NULL}
+};
 
 #endif //SRC_UTILS_STACK_COMMANDS_H

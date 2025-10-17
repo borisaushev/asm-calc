@@ -21,13 +21,6 @@ typedef struct compilerInfo {
     char regVal;
 } compilerInfo_t;
 
-typedef struct commandsInfo {
-    const command_t command;
-    const char* const commandStr;
-    error_t (*func)(compilerInfo_t* compilerInfo);
-    const int argc;
-} commandsInfo_t;
-
 error_t openFiles(FILE** targetPr, FILE** targetStreamBytes);
 
 error_t compileAsm(pointer_array_buf_t* text);

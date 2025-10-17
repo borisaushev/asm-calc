@@ -1,6 +1,6 @@
 #include "compiler.h"
 
-#include "commands.h"
+#include "compiler_commands.h"
 
 
 error_t openFiles(FILE** targetPr, FILE** targetStreamBytes) {
@@ -49,15 +49,15 @@ static error_t parseLineAndCommand(compilerInfo_t *compilerInfo, char cmnd[MAX_C
     return SUCCESS;
 }
 
-static error_t findCommand(compilerInfo_t *compilerInfo, char cmnd[MAX_COMMAND_LENGTH], int &found) {
+static error_t compileCommand(compilerInfo_t *compilerInfo, char cmnd[MAX_COMMAND_LENGTH], int* found) {
     for (int i = 0; i < COMMANDS_COUNT; i++) {
-        commandsInfo_t curCmndFunc = commandsFuncs[i];
-        if (strcmp(cmnd, curCmndFunc.commandStr) == 0) {
-            compilerInfo->command = curCmndFunc.command;
-            SAFE_CALL(curCmndFunc.func(compilerInfo));
+        compilerCmdInfo_t curCommand = compilerCommandsInfo[i];
+        if (strcmp(cmnd, curCommand.commandStr) == 0) {
+            compilerInfo->command = curCommand.command;
+            SAFE_CALL(curCommand.func(compilerInfo));
 
             compilerInfo->arrIndex++;
-            found = 1;
+            *found = 1;
             break;
         }
     }
@@ -84,7 +84,7 @@ error_t compile(compilerInfo_t* compilerInfo) {
         }
 
         int found = 0;
-        SAFE_CALL(findCommand(compilerInfo, cmnd, found));
+        SAFE_CALL(compileCommand(compilerInfo, cmnd, &found));
 
         if (!found) {
             PRINT_ASM_LINE_ERR();
@@ -105,14 +105,14 @@ static error_t makeListing(compilerInfo_t* compilerInfo) {
     fprintf(compilerInfo->targetPr, "%s V: %d\n", SIGNATURA, VERSION);
     for (size_t i = 0; i < compilerInfo->size; i++) {
         for (int ind = 0; ind < COMMANDS_COUNT; ind++) {
-            commandsInfo_t curCmnd = commandsFuncs[ind];
+            compilerCmdInfo_t curCommand = compilerCommandsInfo[ind];
 
-            if (compilerInfo->commandsArr[i] == curCmnd.command) {
+            if (compilerInfo->commandsArr[i] == curCommand.command) {
                 fprintf(compilerInfo->targetPr, "%03llu    ", i);
-                if (curCmnd.argc == 0) {
+                if (curCommand.argc == 0) {
                     fprintf(compilerInfo->targetPr, "%.8d    ", compilerInfo->commandsArr[i]);
                 }
-                else if (curCmnd.argc == 1) {
+                else if (curCommand.argc == 1) {
                     fprintf(compilerInfo->targetPr, "%.3d  %.3d    ", compilerInfo->commandsArr[i], compilerInfo->commandsArr[i + 1]);
                     i++;
                 }
@@ -120,7 +120,7 @@ static error_t makeListing(compilerInfo_t* compilerInfo) {
                     RETURN_ERR(INVALID_INPUT, "invalid argument count");
                 }
 
-                fprintf(compilerInfo->targetPr, "%1.10s\n", curCmnd.commandStr);
+                fprintf(compilerInfo->targetPr, "%1.10s\n", curCommand.commandStr);
                 break;
             }
         }
