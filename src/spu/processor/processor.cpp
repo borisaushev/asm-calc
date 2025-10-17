@@ -43,7 +43,7 @@ error_t runCmnds(processor_t* processor) {
 
     int curCmnd = -1;
     int line = 1;
-    for (; curCmnd != HLT && processor->CP < MAX_COMMANDS && processor->CP < processor->commandsCount; (processor->CP)++, line++) {
+    for (; curCmnd != HLT && processor->CP < processor->commandsCount; (processor->CP)++, line++) {
         curCmnd = processor->commands[processor->CP];
 
         switch (curCmnd) {

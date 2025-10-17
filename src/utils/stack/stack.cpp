@@ -86,6 +86,8 @@ error_t stackDump(const stack_t *stack,const char *file, int line,
     stackDumpStream(stack, validation, dumpFile, file, line, function);
 
     fclose(dumpFile);
+
+    return SUCCESS;
 }
 
 error_t stackDumpStream(const stack_t *stack, error_t validation, FILE* dumpFile,

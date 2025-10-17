@@ -48,13 +48,12 @@ typedef enum commands {
     HLT = 20,
 } command_t;
 
-// const char* const ASM_SRC_PATH = "..\\files\\examples\\JNE.asm";
 const char* const ASM_SRC_PATH = "..\\files\\kvadratka.asm";
 // const char* const ASM_SRC_PATH = "..\\files\\factorial.asm";
 const char* const BYTECODE_PR_PATH = "..\\files\\listing.lst";
 const char* const BYTECODE_PATH = "..\\files\\bytecode.bbc";
 
-const int VERSION = 20;
+const int VERSION = 21;
 const char* const SIGNATURA = "BB";
 const int SIGNATURA_BYTE = 0xBB;
 const int SIGNATURA_SIZE = 2;
