@@ -27,25 +27,25 @@ typedef enum errors {
 
 typedef enum commands {
     ADD = 1,
-    SUB,
-    DIV,
-    MUL,
-    SQRT,
-    OUT,
-    IN,
-    PUSH,
-    POPREG,
-    PUSHREG,
-    JMP,
-    JB,
-    JBE,
-    JA,
-    JAE,
-    JE,
-    JNE,
-    CALL,
-    RET,
-    HLT,
+    SUB = 2,
+    DIV = 3,
+    MUL = 4,
+    SQRT = 5,
+    OUT = 6,
+    IN = 7, // считать с консоли в стек
+    PUSH = 8, // в стек
+    POPREG = 9, // POPREG AX - записать в регистр значение stackPop()
+    PUSHREG = 10, // PUSHREG AX - сделать push() в стек значения AX
+    JMP = 11,
+    JB = 12,
+    JBE = 13,
+    JA = 14,
+    JAE = 15,
+    JE = 16,
+    JNE = 17,
+    CALL = 18,
+    RET = 19,
+    HLT = 20,
 } command_t;
 
 // const char* const ASM_SRC_PATH = "..\\files\\examples\\JNE.asm";
@@ -54,28 +54,28 @@ const char* const ASM_SRC_PATH = "..\\files\\kvadratka.asm";
 const char* const BYTECODE_PR_PATH = "..\\files\\listing.lst";
 const char* const BYTECODE_PATH = "..\\files\\bytecode.bbc";
 
-const int VERSION = 18;
+const int VERSION = 19;
 const char* const SIGNATURA = "BB";
 const int SIGNATURA_BYTE = 0xBB;
 const int SIGNATURA_SIZE = 2;
-const int REGISTER_SIZE = 10;
 
 const int MAX_COMMAND_LENGTH = 100;
 const int MAX_COMMANDS = 1024;
 const int MAX_LABELS = 10;
 const int COMMANDS_COUNT = 20;
 
+const int REGISTER_SIZE = 10;
+const int RAM_SIZE = 100;
+
 #define BEGIN do {
 #define END   } while (0);
 
 //DEBUG printf with immediate flush
 #ifdef DEBUG
+#include "line_reader.h"
 #define DPRINTF(...) \
     BEGIN \
-        printf("\033[33m"); \
-        printf(__VA_ARGS__); \
-        printf("\033[0m"); \
-        fflush(stdout); \
+        printYellow(__VA_ARGS__); \
     END
 #else
     #define DPRINTF(...) ;

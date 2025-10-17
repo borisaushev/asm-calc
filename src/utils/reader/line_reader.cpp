@@ -1,8 +1,21 @@
 #include "line_reader.h"
 
+#include <cstdarg>
 #include <fcntl.h>
 
 #include "common.h"
+
+void printYellow(const char* const format, ...) {
+    printf("\033[33m");
+
+    va_list args;
+    va_start(args, format);
+    vfprintf(stdout, format, args);
+    va_end(args);
+    printf("\033[0m");
+
+    fflush(stdout);
+}
 
 long getFileSize(const char* filename) {
     assert(filename);

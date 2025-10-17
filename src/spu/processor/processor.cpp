@@ -84,8 +84,10 @@ error_t runCmnds(processor_t* processor) {
     assert(processor);
     assert(processor->valuesStack);
 
+#ifdef DEBUG
     DPrintProcessor(processor);
     SAFE_CALL(verifyProcessor(processor));
+#endif
 
     int curCmnd = -1;
     int line = 1;

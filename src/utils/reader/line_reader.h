@@ -3,7 +3,6 @@
 
 #include "common.h"
 
-
 /**
  * structure containing ptr to the first symbol of line and the length of the line
  */
@@ -52,5 +51,7 @@ void printBuf(FILE* output, ptr_array_buf* ptr_array);
 void myPrintf(FILE* output, ptr_wrap_t ptr_wrap);
 
 long getFileSize(const char* filename);
+
+void printYellow(const char* const format, ...);
 
 #endif //ONEGIN_LINEREADER_H

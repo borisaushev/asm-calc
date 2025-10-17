@@ -11,6 +11,7 @@ typedef struct processor {
     size_t CP;
     int registerArr[REGISTER_SIZE];
     stack_t* callStack;
+    int* RAM;
 } processor_t;
 
 error_t initProcessor(processor_t* processor, stack_t* valuesStack, const int commands[MAX_COMMANDS],
@@ -21,7 +22,7 @@ void dumpProcessor(processor_t* processor);
 
 void destroyProcessor(processor_t* processor);
 
-void printProcessor(processor_t *processor, FILE* dumpFile);
+void dumpProcessor(processor_t *processor, FILE* dumpFile);
 
 
 #endif //SRC_UTILS_STACK_PROCESSOR_STR_H

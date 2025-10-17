@@ -27,6 +27,8 @@ error_t initProcessor(processor_t* processor, stack_t* valuesStack, const int co
     }
     processor->commandsCount = commandsCount;
 
+    processor->RAM = (int*) calloc(RAM_SIZE, sizeof(int));
+
     return SUCCESS;
 }
 
@@ -53,7 +55,7 @@ error_t verifyProcessor(processor_t* processor) {
     return SUCCESS;
 }
 
-void printProcessor(processor_t *processor, FILE* dumpFile) {
+void dumpProcessor(processor_t* processor, FILE* dumpFile) {
     fprintf(dumpFile, "Processor dump:\n");
     fprintf(dumpFile, "curI: %llu, commands count: %llu\n", processor->CP, processor->commandsCount);
 
@@ -82,18 +84,18 @@ void printProcessor(processor_t *processor, FILE* dumpFile) {
     fprintf(dumpFile, "\n");
 
     fprintf(dumpFile, "values stack:\n");
-    stackDump(processor->valuesStack, __FILE__, __LINE__, __FUNCTION__, validateStack(processor->valuesStack));
-    fprintStack(dumpFile, processor->valuesStack);
+    stackDumpStream(processor->valuesStack, validateStack(processor->valuesStack), dumpFile,
+        __FILE__, __LINE__, __FUNCTION__);
 
     fprintf(dumpFile, "call stack:\n");
-    stackDump(processor->callStack, __FILE__, __LINE__, __FUNCTION__, validateStack(processor->callStack));
-    fprintStack(dumpFile, processor->callStack);
+    stackDumpStream(processor->callStack, validateStack(processor->callStack), dumpFile,
+        __FILE__, __LINE__, __FUNCTION__);
 
     fflush(dumpFile);
 }
 
 void DPrintProcessor(processor_t *processor) {
-    DPRINTF("Processor dump:\n");
+    DPRINTF("Processor:\n");
     DPRINTF("curI: %llu, commands count: %llu\n", processor->CP, processor->commandsCount);
 
     DPRINTF("commands: [");
@@ -121,11 +123,9 @@ void DPrintProcessor(processor_t *processor) {
     DPRINTF("\n");
 
     DPRINTF("values stack:\n");
-    stackDump(processor->valuesStack, __FILE__, __LINE__, __FUNCTION__, validateStack(processor->valuesStack));
     DPrintStack(processor->valuesStack);
 
     DPRINTF("call stack:\n");
-    stackDump(processor->callStack, __FILE__, __LINE__, __FUNCTION__, validateStack(processor->callStack));
     DPrintStack(processor->callStack);
 }
 
@@ -133,14 +133,16 @@ void dumpProcessor(processor_t* processor) {
     assert(processor);
     static FILE* dumpFile = NULL;
     if (dumpFile == NULL) {
-        dumpFile = fopen(PROC_LOG_FILE, "w");
+        dumpFile = fopen(PROC_LOG_FILE, "wa");
     }
-    printProcessor(processor, dumpFile);
+    dumpProcessor(processor, dumpFile);
 }
 
 void destroyProcessor(processor_t* processor) {
     assert(processor);
     assert(processor->valuesStack);
+    assert(processor->RAM);
     stackDestroy(processor->valuesStack);
+    free(processor->RAM);
 }
 

@@ -70,11 +70,8 @@ static void dumpData(FILE* output, const stack_t *stack) {
     }
 }
 
-error_t stackDump(const stack_t *stack,
-                       const char *file,
-                       int line,
-                       const char *function,
-                       error_t validation) {
+error_t stackDump(const stack_t *stack,const char *file, int line,
+                  const char *function, error_t validation) {
     static FILE* dumpFile = NULL;
     if (dumpFile == NULL) {
         dumpFile = fopen(STACK_LOG_FILE, "wa");
@@ -85,6 +82,15 @@ error_t stackDump(const stack_t *stack,
 
         RETURN_ERR(CANT_OPEN_FILE, "dump file not found");
     }
+
+    stackDumpStream(stack, validation, dumpFile, file, line, function);
+
+    fclose(dumpFile);
+}
+
+error_t stackDumpStream(const stack_t *stack, error_t validation, FILE* dumpFile,
+                        const char *file, int line, const char *function) {
+    assert(dumpFile);
 
     fprintf(dumpFile, "StackDump() {\n");
 
@@ -111,9 +117,6 @@ error_t stackDump(const stack_t *stack,
     dumpData(dumpFile, stack);
 
     fprintf(dumpFile, "\t\t}\n\t}\n}\n");
-
-    fclose(dumpFile);
-
 
     return SUCCESS;
 }

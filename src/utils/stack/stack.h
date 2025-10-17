@@ -53,4 +53,7 @@ error_t DPrintStack(stack_t* stack);
 error_t stackDestroy(stack_t* stack);
 
 error_t validateStack(const stack_t* stack);
+
+error_t stackDumpStream(const stack_t *stack, error_t validation, FILE* dumpFile,
+                        const char *file, int line, const char *function);
 #endif //ASM_CALC_STACK_H
