@@ -6,11 +6,8 @@
 #include "commands/processor_commands.h"
 #include "struct/processorStruct.h"
 
-error_t parseCommands(const char* filename, int arr[MAX_COMMANDS], size_t* commandsCount) {
+error_t parseCommands(const char* filename, processor_t* processor) {
     assert(filename);
-    assert(arr);
-    assert(commandsCount);
-
 
     FILE* file = fopen(filename, "r");
     if (!file) {
@@ -27,7 +24,10 @@ error_t parseCommands(const char* filename, int arr[MAX_COMMANDS], size_t* comma
         RETURN_ERR(INVALID_INPUT, "INVALID BYTE CODE VERSION");
     }
 
-    *commandsCount = fread(arr, sizeof(int), MAX_COMMANDS + 2, file);
+    processor->commandsCount = fread(processor->commands, sizeof(int), MAX_COMMANDS, file);
+    if (processor->commandsCount > MAX_COMMANDS) {
+        RETURN_ERR(INVALID_INPUT, "MAX COMMANDS NUMBER EXCEEDED");
+    }
 
     fclose(file);
     return SUCCESS;

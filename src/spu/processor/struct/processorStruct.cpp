@@ -3,10 +3,8 @@
 #include "processor.h"
 
 
-error_t initProcessor(processor_t* processor, stack_t* valuesStack, const int commands[MAX_COMMANDS],
-                      size_t commandsCount, stack_t* callStack) {
+error_t initProcessor(processor_t* processor, stack_t* valuesStack, stack_t* callStack) {
     assert(processor);
-    assert(commands);
     assert(valuesStack);
     assert(callStack);
 
@@ -14,18 +12,15 @@ error_t initProcessor(processor_t* processor, stack_t* valuesStack, const int co
     STACK_VALID(callStack);
     processor->valuesStack = valuesStack;
     processor->callStack = callStack;
-    for (size_t i = 0; i < commandsCount; i++) {
-        processor->commands[i] = commands[i];
-    }
-    for (size_t i = commandsCount; i < MAX_COMMANDS; i++) {
-        processor->commands[i] = POISON;
-    }
     processor->CP = 0;
 
     for (int i = 0; i < REGISTER_SIZE; i++) {
         processor->registerArr[i] = POISON;
     }
-    processor->commandsCount = commandsCount;
+    for (int i = 0; i < MAX_COMMANDS; i++) {
+        processor->commands[i] = POISON;
+    }
+    processor->commandsCount = 0;
 
     processor->RAM = (int*) calloc(RAM_SIZE, sizeof(int));
 

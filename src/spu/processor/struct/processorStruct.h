@@ -14,8 +14,8 @@ typedef struct processor {
     int* RAM;
 } processor_t;
 
-error_t initProcessor(processor_t* processor, stack_t* valuesStack, const int commands[MAX_COMMANDS],
-                      size_t commandsCount, stack_t* callStack);
+error_t initProcessor(processor_t* processor, stack_t* valuesStack, stack_t* callStack);
+
 error_t verifyProcessor(processor_t* processor);
 
 void dumpProcessor(processor_t* processor);

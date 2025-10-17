@@ -9,9 +9,6 @@
 #include <sys/stat.h>
 #include <filesystem>
 
-// TODO сделать отдельные enum-ы для разных мест
-// Есть команда DRAW
-
 typedef enum errors {
     SUCCESS = 0,
     NULL_PTR,
@@ -53,7 +50,7 @@ const char* const ASM_SRC_PATH = "..\\files\\kvadratka.asm";
 const char* const BYTECODE_PR_PATH = "..\\files\\listing.lst";
 const char* const BYTECODE_PATH = "..\\files\\bytecode.bbc";
 
-const int VERSION = 22;
+const int VERSION = 23;
 const char* const SIGNATURA = "BB";
 const int SIGNATURA_BYTE = 0xBB;
 const int SIGNATURA_SIZE = 2;
@@ -65,6 +62,8 @@ const int COMMANDS_COUNT = 20;
 
 const int REGISTER_SIZE = 10;
 const int RAM_SIZE = 100;
+
+const int STACK_BASE_SIZE = 100;
 
 #define BEGIN do {
 #define END   } while (0);

@@ -4,22 +4,30 @@
 
 int main() {
     stack_t valuesStack = {};
-    initStack(&valuesStack, 10);
+    initStack(&valuesStack, STACK_BASE_SIZE);
 
     stack_t callStack = {};
-    initStack(&callStack, 10);
+    initStack(&callStack, STACK_BASE_SIZE);
 
     processor_t processor = {};
+    initProcessor(&processor, &valuesStack, &callStack);
 
-    int commands[MAX_COMMANDS] = {};
-    size_t commandsCount = 0;
-    error_t callResult = parseCommands(BYTECODE_PATH, commands, &commandsCount);
+    error_t callResult = parseCommands(BYTECODE_PATH, &processor);
     if(callResult != SUCCESS) {
-        stackDestroy(&valuesStack);
+        destroyProcessor(&processor);
         return callResult;
     }
 
-    initProcessor(&processor, &valuesStack, commands, commandsCount, &callStack);
+    callResult = verifyProcessor(&processor);
+    if (callResult != SUCCESS) {
+        #ifdef DEBUG
+            dumpProcessor(&processor);
+            PRINTERR("Error while parsing commands");
+        #endif
+
+        destroyProcessor(&processor);
+        return callResult;
+    }
 
     runCmnds(&processor);
 
