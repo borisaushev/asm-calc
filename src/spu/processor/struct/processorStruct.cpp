@@ -3,15 +3,12 @@
 #include "processor.h"
 
 
-error_t initProcessor(processor_t* processor, stack_t* valuesStack, stack_t* callStack) {
+error_t initProcessor(processor_t* processor) {
     assert(processor);
-    assert(valuesStack);
-    assert(callStack);
 
-    STACK_VALID(valuesStack);
-    STACK_VALID(callStack);
-    processor->valuesStack = valuesStack;
-    processor->callStack = callStack;
+    initStack(&processor->valuesStack, STACK_BASE_SIZE);
+    initStack(&processor->callStack, STACK_BASE_SIZE);
+
     processor->CP = 0;
 
     for (int i = 0; i < REGISTER_SIZE; i++) {
@@ -33,15 +30,8 @@ error_t verifyProcessor(processor_t* processor) {
     }
 
     dumpProcessor(processor);
-    if (processor->valuesStack == NULL) {
-        RETURN_ERR(NULL_PTR, "stack ptr is null");
-    }
-    STACK_VALID(processor->valuesStack);
-
-    if (processor->callStack == NULL) {
-        RETURN_ERR(NULL_PTR, "stack ptr is null");
-    }
-    STACK_VALID(processor->callStack);
+    STACK_VALID(&processor->valuesStack);
+    STACK_VALID(&processor->callStack);
 
     if (processor->RAM == NULL) {
         RETURN_ERR(NULL_PTR, "ram pointer is null");
@@ -88,11 +78,11 @@ void dumpProcessor(processor_t* processor, FILE* dumpFile) {
     fprintf(dumpFile, "\n");
 
     fprintf(dumpFile, "values stack:\n");
-    stackDumpStream(processor->valuesStack, validateStack(processor->valuesStack), dumpFile,
+    stackDumpStream(&processor->valuesStack, validateStack(&processor->valuesStack), dumpFile,
         __FILE__, __LINE__, __FUNCTION__);
 
     fprintf(dumpFile, "call stack:\n");
-    stackDumpStream(processor->callStack, validateStack(processor->callStack), dumpFile,
+    stackDumpStream(&processor->callStack, validateStack(&processor->callStack), dumpFile,
         __FILE__, __LINE__, __FUNCTION__);
 
     fprintf(dumpFile, "ram:\n");
@@ -136,10 +126,10 @@ void DPrintProcessor(processor_t* processor) {
     DPRINTF("\n");
 
     DPRINTF("values stack:\n");
-    DPrintStack(processor->valuesStack);
+    DPrintStack(&processor->valuesStack);
 
     DPRINTF("call stack:\n");
-    DPrintStack(processor->callStack);
+    DPrintStack(&processor->callStack);
 }
 
 void dumpProcessor(processor_t* processor) {
@@ -153,9 +143,10 @@ void dumpProcessor(processor_t* processor) {
 
 void destroyProcessor(processor_t* processor) {
     assert(processor);
-    assert(processor->valuesStack);
     assert(processor->RAM);
-    stackDestroy(processor->valuesStack);
+
+    stackDestroy(&processor->valuesStack);
+    stackDestroy(&processor->callStack);
     free(processor->RAM);
 }
 

@@ -5,16 +5,16 @@
 
 
 typedef struct processor {
-    stack_t* valuesStack;
+    stack_t valuesStack;
     int commands[MAX_COMMANDS];
     size_t commandsCount;
     size_t CP;
     int registerArr[REGISTER_SIZE];
-    stack_t* callStack;
+    stack_t callStack;
     int* RAM;
 } processor_t;
 
-error_t initProcessor(processor_t* processor, stack_t* valuesStack, stack_t* callStack);
+error_t initProcessor(processor_t* processor);
 
 error_t verifyProcessor(processor_t* processor);
 

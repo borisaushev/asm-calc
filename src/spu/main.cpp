@@ -3,14 +3,8 @@
 #include "processor.h"
 
 int main() {
-    stack_t valuesStack = {};
-    initStack(&valuesStack, STACK_BASE_SIZE);
-
-    stack_t callStack = {};
-    initStack(&callStack, STACK_BASE_SIZE);
-
     processor_t processor = {};
-    initProcessor(&processor, &valuesStack, &callStack);
+    initProcessor(&processor);
 
     error_t callResult = parseCommands(BYTECODE_PATH, &processor);
     if(callResult != SUCCESS) {
@@ -33,8 +27,6 @@ int main() {
 
     destroyProcessor(&processor);
 }
-
-//TODO
 
 #if 0
 

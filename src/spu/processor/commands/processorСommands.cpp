@@ -23,8 +23,8 @@ static error_t getJmpIndexAndVals(processor_t* processor, int* index, int* value
 
     *value1 = -1;
     *value2 = -1;
-    SAFE_CALL(stackPop(processor->valuesStack, value1));
-    SAFE_CALL(stackPop(processor->valuesStack, value2));
+    SAFE_CALL(stackPop(&processor->valuesStack, value1));
+    SAFE_CALL(stackPop(&processor->valuesStack, value2));
 
     if (*value1 == POISON || *value2 == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
@@ -39,8 +39,8 @@ error_t spuDiv(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
     int value1 = POISON, value2 = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &value1));
-    SAFE_CALL(stackPop(processor->valuesStack, &value2));
+    SAFE_CALL(stackPop(&processor->valuesStack, &value1));
+    SAFE_CALL(stackPop(&processor->valuesStack, &value2));
 
     if (value1 == POISON || value2 == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
@@ -51,7 +51,7 @@ error_t spuDiv(processor_t* processor) {
         RETURN_ERR(INVALID_INPUT, "division by zero");
     }
     DPRINTF("DIV: %d\n", result);
-    SAFE_CALL(stackPush(processor->valuesStack, result));
+    SAFE_CALL(stackPush(&processor->valuesStack, result));
 
     return SUCCESS;
 }
@@ -60,8 +60,8 @@ error_t spuAdd(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
     int value1 = POISON, value2 = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &value1));
-    SAFE_CALL(stackPop(processor->valuesStack, &value2));
+    SAFE_CALL(stackPop(&processor->valuesStack, &value1));
+    SAFE_CALL(stackPop(&processor->valuesStack, &value2));
     if (value1 == POISON || value2 == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
@@ -69,7 +69,7 @@ error_t spuAdd(processor_t* processor) {
     int result = value1 + value2;
     DPRINTF("ADD");
     DPRINTF(": %d\n", result);
-    SAFE_CALL(stackPush(processor->valuesStack, result));
+    SAFE_CALL(stackPush(&processor->valuesStack, result));
 
     return SUCCESS;
 }
@@ -78,8 +78,8 @@ error_t spuMul(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
     int value1 = POISON, value2 = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &value1));
-    SAFE_CALL(stackPop(processor->valuesStack, &value2));
+    SAFE_CALL(stackPop(&processor->valuesStack, &value1));
+    SAFE_CALL(stackPop(&processor->valuesStack, &value2));
     if (value1 == POISON || value2 == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
@@ -87,7 +87,7 @@ error_t spuMul(processor_t* processor) {
     int result = value1 * value2;
     DPRINTF("MUL");
     DPRINTF(": %d\n", result);
-    SAFE_CALL(stackPush(processor->valuesStack, result));
+    SAFE_CALL(stackPush(&processor->valuesStack, result));
 
     return SUCCESS;
 }
@@ -96,8 +96,8 @@ error_t spuSub(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
     int value1 = POISON, value2 = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &value1));
-    SAFE_CALL(stackPop(processor->valuesStack, &value2));
+    SAFE_CALL(stackPop(&processor->valuesStack, &value1));
+    SAFE_CALL(stackPop(&processor->valuesStack, &value2));
     if (value1 == POISON || value2 == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
@@ -105,7 +105,7 @@ error_t spuSub(processor_t* processor) {
     int result = value2 - value1;
     DPRINTF("ADD");
     DPRINTF(": %d\n", result);
-    SAFE_CALL(stackPush(processor->valuesStack, result));
+    SAFE_CALL(stackPush(&processor->valuesStack, result));
 
     return SUCCESS;
 }
@@ -114,7 +114,7 @@ error_t spuSqrt(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
     int value = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &value));
+    SAFE_CALL(stackPop(&processor->valuesStack, &value));
 
     if (value == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
@@ -125,7 +125,7 @@ error_t spuSqrt(processor_t* processor) {
     int result = (int) sqrt(value);
 
     DPRINTF("SQRT: %d\n", result);
-    SAFE_CALL(stackPush(processor->valuesStack, result));
+    SAFE_CALL(stackPush(&processor->valuesStack, result));
 
     return SUCCESS;
 }
@@ -134,7 +134,7 @@ error_t spuOut(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
     int outValue = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &outValue));
+    SAFE_CALL(stackPop(&processor->valuesStack, &outValue));
     if (outValue == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
@@ -148,7 +148,7 @@ error_t spuPush(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
     int pushValue = processor->commands[++processor->CP];
-    SAFE_CALL(stackPush(processor->valuesStack, pushValue));
+    SAFE_CALL(stackPush(&processor->valuesStack, pushValue));
 
     DPRINTF("PUSH: %d\n", pushValue);
 
@@ -166,7 +166,7 @@ error_t spuIn(processor_t* processor) {
     printf("\n");
 
     DPRINTF("INPUT: %d\n", input);
-    SAFE_CALL(stackPush(processor->valuesStack, input));
+    SAFE_CALL(stackPush(&processor->valuesStack, input));
 
     return SUCCESS;
 }
@@ -181,7 +181,7 @@ error_t spuPushReg(processor_t* processor) {
     if (processor->registerArr[reg] == POISON) {
         RETURN_ERR(INVALID_INPUT, "register is not initialized");
     }
-    SAFE_CALL(stackPush(processor->valuesStack, processor->registerArr[reg]));
+    SAFE_CALL(stackPush(&processor->valuesStack, processor->registerArr[reg]));
     DPRINTF("PUSHREG: reg: %d, val: %d\n", reg, processor->registerArr[reg]);
 
     return SUCCESS;
@@ -195,7 +195,7 @@ error_t spuPopReg(processor_t* processor) {
         RETURN_ERR(INVALID_INPUT, "reg value out of range");
     }
 
-    SAFE_CALL(stackPop(processor->valuesStack, &(processor->registerArr[reg])));
+    SAFE_CALL(stackPop(&processor->valuesStack, &(processor->registerArr[reg])));
     if (processor->registerArr[reg] == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
@@ -313,7 +313,7 @@ error_t spuCall(processor_t* processor) {
     SAFE_CALL(getJmpIndex(processor, &index));
 
     DPRINTF("CALL: from: [%llu], to index: [%d]\n", processor->CP, index);
-    SAFE_CALL(stackPush(processor->callStack, (int) processor->CP));
+    SAFE_CALL(stackPush(&processor->callStack, (int) processor->CP));
     processor->CP = (size_t) index;
 
     return SUCCESS;
@@ -323,7 +323,7 @@ error_t spuRet(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
     int retIndex = -1;
-    stackPop(processor->callStack, &retIndex);
+    stackPop(&processor->callStack, &retIndex);
     if (retIndex < 0 || retIndex >= (int) processor->commandsCount || retIndex == POISON) {
         RETURN_ERR(INVALID_INPUT, "invalid return index");
     }
@@ -344,7 +344,7 @@ error_t spuPushMem(processor_t* processor) {
         RETURN_ERR(INVALID_INPUT, "register is not initialized");
     }
 
-    SAFE_CALL(stackPush(processor->valuesStack, processor->RAM[processor->registerArr[reg]]));
+    SAFE_CALL(stackPush(&processor->valuesStack, processor->RAM[processor->registerArr[reg]]));
     DPRINTF("PUSHMEM: reg: %d, regval: %d, val: %d\n", reg, processor->registerArr[reg], processor->RAM[processor->registerArr[reg]]);
 
     return SUCCESS;
@@ -362,7 +362,7 @@ error_t spuPopMem(processor_t* processor) {
     }
 
     int value = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &value));
+    SAFE_CALL(stackPop(&processor->valuesStack, &value));
     if (value == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
