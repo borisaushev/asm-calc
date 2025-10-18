@@ -13,24 +13,24 @@ static error_t getJmpIndex(processor_t* processor, int *index) {
     return SUCCESS;
 }
 
-static error_t getJmpIndexAndVals(processor_t* processor, int* index, int* v1, int* v2) {
+static error_t getJmpIndexAndVals(processor_t* processor, int* index, int* value1, int* value2) {
     SAFE_CALL(verifyProcessor(processor));
     assert(index);
-    assert(v1);
-    assert(v2);
+    assert(value1);
+    assert(value2);
 
     SAFE_CALL(getJmpIndex(processor, index));
 
-    *v1 = -1;
-    *v2 = -1;
-    SAFE_CALL(stackPop(processor->valuesStack, v1));
-    SAFE_CALL(stackPop(processor->valuesStack, v2));
+    *value1 = -1;
+    *value2 = -1;
+    SAFE_CALL(stackPop(processor->valuesStack, value1));
+    SAFE_CALL(stackPop(processor->valuesStack, value2));
 
-    if (*v1 == POISON || *v2 == POISON) {
+    if (*value1 == POISON || *value2 == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
 
-    DPRINTF("parsed jmp index: %d, v1: %d, v2: %d\n", *index, *v1, *v2)
+    DPRINTF("parsed jmp index: %d, v1: %d, v2: %d\n", *index, *value1, *value2)
 
     return SUCCESS;
 }
@@ -38,20 +38,20 @@ static error_t getJmpIndexAndVals(processor_t* processor, int* index, int* v1, i
 error_t spuDiv(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int v1 = POISON, v2 = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &v1));
-    SAFE_CALL(stackPop(processor->valuesStack, &v2));
+    int value1 = POISON, value2 = POISON;
+    SAFE_CALL(stackPop(processor->valuesStack, &value1));
+    SAFE_CALL(stackPop(processor->valuesStack, &value2));
 
-    if (v1 == POISON || v2 == POISON) {
+    if (value1 == POISON || value2 == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
 
-    int val = v2 / v1;
-    if (v1 == 0) {
+    int result = value2 / value1;
+    if (value1 == 0) {
         RETURN_ERR(INVALID_INPUT, "division by zero");
     }
-    DPRINTF("DIV: %d\n", val);
-    SAFE_CALL(stackPush(processor->valuesStack, val));
+    DPRINTF("DIV: %d\n", result);
+    SAFE_CALL(stackPush(processor->valuesStack, result));
 
     return SUCCESS;
 }
@@ -59,17 +59,17 @@ error_t spuDiv(processor_t* processor) {
 error_t spuAdd(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int v1 = POISON, v2 = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &v1));
-    SAFE_CALL(stackPop(processor->valuesStack, &v2));
-    if (v1 == POISON || v2 == POISON) {
+    int value1 = POISON, value2 = POISON;
+    SAFE_CALL(stackPop(processor->valuesStack, &value1));
+    SAFE_CALL(stackPop(processor->valuesStack, &value2));
+    if (value1 == POISON || value2 == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
 
-    int val = v1 + v2;
+    int result = value1 + value2;
     DPRINTF("ADD");
-    DPRINTF(": %d\n", val);
-    SAFE_CALL(stackPush(processor->valuesStack, val));
+    DPRINTF(": %d\n", result);
+    SAFE_CALL(stackPush(processor->valuesStack, result));
 
     return SUCCESS;
 }
@@ -77,17 +77,17 @@ error_t spuAdd(processor_t* processor) {
 error_t spuMul(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int v1 = POISON, v2 = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &v1));
-    SAFE_CALL(stackPop(processor->valuesStack, &v2));
-    if (v1 == POISON || v2 == POISON) {
+    int value1 = POISON, value2 = POISON;
+    SAFE_CALL(stackPop(processor->valuesStack, &value1));
+    SAFE_CALL(stackPop(processor->valuesStack, &value2));
+    if (value1 == POISON || value2 == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
 
-    int val = v1 * v2;
+    int result = value1 * value2;
     DPRINTF("MUL");
-    DPRINTF(": %d\n", val);
-    SAFE_CALL(stackPush(processor->valuesStack, val));
+    DPRINTF(": %d\n", result);
+    SAFE_CALL(stackPush(processor->valuesStack, result));
 
     return SUCCESS;
 }
@@ -95,17 +95,17 @@ error_t spuMul(processor_t* processor) {
 error_t spuSub(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int v1 = POISON, v2 = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &v1));
-    SAFE_CALL(stackPop(processor->valuesStack, &v2));
-    if (v1 == POISON || v2 == POISON) {
+    int value1 = POISON, value2 = POISON;
+    SAFE_CALL(stackPop(processor->valuesStack, &value1));
+    SAFE_CALL(stackPop(processor->valuesStack, &value2));
+    if (value1 == POISON || value2 == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
 
-    int val = v2 - v1;
+    int result = value2 - value1;
     DPRINTF("ADD");
-    DPRINTF(": %d\n", val);
-    SAFE_CALL(stackPush(processor->valuesStack, val));
+    DPRINTF(": %d\n", result);
+    SAFE_CALL(stackPush(processor->valuesStack, result));
 
     return SUCCESS;
 }
@@ -113,19 +113,19 @@ error_t spuSub(processor_t* processor) {
 error_t spuSqrt(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int v1 = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &v1));
+    int value = POISON;
+    SAFE_CALL(stackPop(processor->valuesStack, &value));
 
-    if (v1 == POISON) {
+    if (value == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
-    if (v1 < 0) {
+    if (value < 0) {
         RETURN_ERR(INVALID_INPUT, "negative number passed to sqrt");
     }
-    int val = (int) sqrt(v1);
+    int result = (int) sqrt(value);
 
-    DPRINTF("SQRT: %d\n", val);
-    SAFE_CALL(stackPush(processor->valuesStack, val));
+    DPRINTF("SQRT: %d\n", result);
+    SAFE_CALL(stackPush(processor->valuesStack, result));
 
     return SUCCESS;
 }
@@ -133,13 +133,13 @@ error_t spuSqrt(processor_t* processor) {
 error_t spuOut(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int v = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &v));
-    if (v == POISON) {
+    int outValue = POISON;
+    SAFE_CALL(stackPop(processor->valuesStack, &outValue));
+    if (outValue == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
 
-    printf("OUT: %d\n", v);
+    printf("OUT: %d\n", outValue);
 
     return SUCCESS;
 }
@@ -147,10 +147,10 @@ error_t spuOut(processor_t* processor) {
 error_t spuPush(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int v = processor->commands[++processor->CP];
-    SAFE_CALL(stackPush(processor->valuesStack, v));
+    int pushValue = processor->commands[++processor->CP];
+    SAFE_CALL(stackPush(processor->valuesStack, pushValue));
 
-    DPRINTF("PUSH: %d\n", v);
+    DPRINTF("PUSH: %d\n", pushValue);
 
     return SUCCESS;
 }
@@ -159,14 +159,14 @@ error_t spuIn(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
     printf("input val: ");
-    int inp = POISON;
-    if (scanf("%d", &inp) != 1) {
+    int input = POISON;
+    if (scanf("%d", &input) != 1) {
         RETURN_ERR(INVALID_INPUT, "invalid input");
     }
     printf("\n");
 
-    DPRINTF("INPUT: %d\n", inp);
-    SAFE_CALL(stackPush(processor->valuesStack, inp));
+    DPRINTF("INPUT: %d\n", input);
+    SAFE_CALL(stackPush(processor->valuesStack, input));
 
     return SUCCESS;
 }
@@ -219,14 +219,14 @@ error_t spuJmp(processor_t* processor) {
 error_t spuJb(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int index = -1, v1 = -1, v2 = -1;
-    SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
+    int index = -1, value1 = -1, value2 = -1;
+    SAFE_CALL(getJmpIndexAndVals(processor, &index, &value1, &value2));
 
-    if (v2 < v1) {
+    if (value2 < value1) {
         DPRINTF("Jump form: %llu, to %d\n", processor->CP, index);
         processor->CP = (size_t) index;
     }
-    DPRINTF("JB: index: %d, v1: %d, v2: %d\n", index, v1, v2);
+    DPRINTF("JB: index: %d, v1: %d, v2: %d\n", index, value1, value2);
 
     return SUCCESS;
 }
@@ -234,14 +234,14 @@ error_t spuJb(processor_t* processor) {
 error_t spuJbe(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int index = -1, v1 = -1, v2 = -1;
-    SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
+    int index = -1, value1 = -1, value2 = -1;
+    SAFE_CALL(getJmpIndexAndVals(processor, &index, &value1, &value2));
 
-    if (v2 <= v1) {
+    if (value2 <= value1) {
         DPRINTF("Jump form: %llu, to %d\n", processor->CP, index);
         processor->CP = (size_t) index;
     }
-    DPRINTF("JBE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
+    DPRINTF("JBE: index: %d, v1: %d, v2: %d\n", index, value1, value2);
 
     return SUCCESS;
 }
@@ -249,14 +249,14 @@ error_t spuJbe(processor_t* processor) {
 error_t spuJa(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int index = -1, v1 = -1, v2 = -1;
-    SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
+    int index = -1, value1 = -1, value2 = -1;
+    SAFE_CALL(getJmpIndexAndVals(processor, &index, &value1, &value2));
 
-    if (v2 > v1) {
+    if (value2 > value1) {
         DPRINTF("Jump form: %llu, to %d\n", processor->CP, index);
         processor->CP = (size_t) index;
     }
-    DPRINTF("JA: index: %d, v1: %d, v2: %d\n", index, v1, v2);
+    DPRINTF("JA: index: %d, v1: %d, v2: %d\n", index, value1, value2);
 
     return SUCCESS;
 }
@@ -264,14 +264,14 @@ error_t spuJa(processor_t* processor) {
 error_t spuJae(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int index = -1, v1 = -1, v2 = -1;
-    SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
+    int index = -1, value1 = -1, value2 = -1;
+    SAFE_CALL(getJmpIndexAndVals(processor, &index, &value1, &value2));
 
-    if (v2 >= v1) {
+    if (value2 >= value1) {
         DPRINTF("Jump form: %llu, to %d\n", processor->CP, index);
         processor->CP = (size_t) index;
     }
-    DPRINTF("JAE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
+    DPRINTF("JAE: index: %d, v1: %d, v2: %d\n", index, value1, value2);
 
     return SUCCESS;
 }
@@ -279,14 +279,14 @@ error_t spuJae(processor_t* processor) {
 error_t spuJe(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int index = -1, v1 = -1, v2 = -1;
-    SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
+    int index = -1, value1 = -1, value2 = -1;
+    SAFE_CALL(getJmpIndexAndVals(processor, &index, &value1, &value2));
 
-    if (v2 == v1) {
+    if (value2 == value1) {
         DPRINTF("Jump form: %llu, to %d\n", processor->CP, index);
         processor->CP = (size_t) index;
     }
-    DPRINTF("JE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
+    DPRINTF("JE: index: %d, v1: %d, v2: %d\n", index, value1, value2);
 
     return SUCCESS;
 }
@@ -294,14 +294,14 @@ error_t spuJe(processor_t* processor) {
 error_t spuJne(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
-    int index = -1, v1 = -1, v2 = -1;
-    SAFE_CALL(getJmpIndexAndVals(processor, &index, &v1, &v2));
+    int index = -1, value1 = -1, value2 = -1;
+    SAFE_CALL(getJmpIndexAndVals(processor, &index, &value1, &value2));
 
-    if (v2 != v1) {
+    if (value2 != value1) {
         DPRINTF("Jump form: %llu, to %d\n", processor->CP, index);
         processor->CP = (size_t) index;
     }
-    DPRINTF("JNE: index: %d, v1: %d, v2: %d\n", index, v1, v2);
+    DPRINTF("JNE: index: %d, v1: %d, v2: %d\n", index, value1, value2);
     
     return SUCCESS;
 }
@@ -361,14 +361,14 @@ error_t spuPopMem(processor_t* processor) {
         RETURN_ERR(INVALID_INPUT, "register is not initialized");
     }
 
-    int val = POISON;
-    SAFE_CALL(stackPop(processor->valuesStack, &val));
-    if (val == POISON) {
+    int value = POISON;
+    SAFE_CALL(stackPop(processor->valuesStack, &value));
+    if (value == POISON) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
 
-    processor->RAM[processor->registerArr[reg]] = val;
-    DPRINTF("POPMEM: reg: %d, regval: %d, val: %d\n", reg, processor->registerArr[reg], val);
+    processor->RAM[processor->registerArr[reg]] = value;
+    DPRINTF("POPMEM: reg: %d, regval: %d, val: %d\n", reg, processor->registerArr[reg], value);
 
     return SUCCESS;
 }
@@ -377,7 +377,8 @@ error_t spuDraw(processor_t* processor) {
     SAFE_CALL(verifyProcessor(processor));
 
     for (int i = 1; i <= RAM_SIZE; i++) {
-        printf("|%c| ", processor->RAM[i - 1]);
+        char ch = (char) processor->RAM[i - 1];
+        printf("|%c| ", ch == 0 ? ' ' : ch);
         if (i % (int) sqrt(RAM_SIZE) == 0) {
             printf("\n");
         }

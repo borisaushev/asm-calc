@@ -59,7 +59,7 @@ static error_t compileCommand(compilerInfo_t *compilerInfo, int* found) {
         compilerCmdInfo_t curCommand = COMPILER_COMMANDS_INFO[i];
         if (strcmp(compilerInfo->curCommand, curCommand.commandStr) == 0) {
             compilerInfo->command = curCommand.command;
-            SAFE_CALL(curCommand.func(compilerInfo));
+            SAFE_CALL(curCommand.function(compilerInfo));
 
             compilerInfo->arrIndex++;
             *found = 1;
@@ -83,7 +83,7 @@ error_t compile(compilerInfo_t* compilerInfo) {
             continue;
         }
         if (compilerInfo->curCommand[0] == ':') {
-            SAFE_CALL(parseLabel(compilerInfo, compilerInfo->curCommand));
+            SAFE_CALL(parseLabel(compilerInfo));
             continue;
         }
 
@@ -110,15 +110,12 @@ static error_t makeListing(compilerInfo_t* compilerInfo) {
 
             if (compilerInfo->commandsArr[i] == curCommand.command) {
                 fprintf(compilerInfo->listingFile, "%03llu    ", i);
-                if (curCommand.argc == 0) {
+                if (curCommand.function == noArgsCommand) {
                     fprintf(compilerInfo->listingFile, "%.8d    ", compilerInfo->commandsArr[i]);
                 }
-                else if (curCommand.argc == 1) {
+                else {
                     fprintf(compilerInfo->listingFile, "%.3d  %.3d    ", compilerInfo->commandsArr[i], compilerInfo->commandsArr[i + 1]);
                     i++;
-                }
-                else {
-                    RETURN_ERR(INVALID_INPUT, "invalid argument count");
                 }
 
                 fprintf(compilerInfo->listingFile, "%1.10s\n", curCommand.commandStr);
@@ -130,7 +127,7 @@ static error_t makeListing(compilerInfo_t* compilerInfo) {
     return SUCCESS;
 }
 
-void initCompilerInfo(pointer_array_buf_t *text, FILE *listingFile, compilerInfo_t &compilerInfo) {
+static void initCompilerInfo(pointer_array_buf_t *text, FILE *listingFile, compilerInfo_t &compilerInfo) {
     compilerInfo.listingFile = listingFile;
     compilerInfo.text = text;
     compilerInfo.command = HLT;

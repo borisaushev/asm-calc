@@ -56,11 +56,10 @@ error_t regParam(compilerInfo_t* compilerInfo) {
     return SUCCESS;
 }
 
-error_t pushCmndAndValue(compilerInfo_t* compilerInfo) {
+error_t pushCommand(compilerInfo_t* compilerInfo) {
     assert(compilerInfo);
 
     int pushVal = POISON;
-
     int read = 0;
     int scanCount = sscanf(compilerInfo->line, " %d%n", &pushVal, &read);
     size_t len = strlen(compilerInfo->line);
@@ -116,15 +115,15 @@ error_t jumpCommand(compilerInfo_t* compilerInfo) {
     RETURN_ERR(INVALID_INPUT, "invalid input value");
 }
 
-error_t parseLabel(compilerInfo_t *compilerInfo, char cmnd[MAX_COMMAND_LENGTH]) {
+error_t parseLabel(compilerInfo_t *compilerInfo) {
     assert(compilerInfo);
 
     int label = -1, read = 0;
-    size_t len = strlen(cmnd);
-    int scanCount = sscanf(cmnd, " :%d%n", &label, &read);
+    size_t len = strlen(compilerInfo->curCommand);
+    int scanCount = sscanf(compilerInfo->curCommand, " :%d%n", &label, &read);
     if (scanCount == 1 && label >= 0 && label < MAX_LABELS) {
         for (size_t ch = 0; (size_t) read + ch < len; ch++) {
-            if (!isspace(cmnd[(size_t) read + ch])) {
+            if (!isspace(compilerInfo->curCommand[(size_t) read + ch])) {
                 PRINT_ASM_LINE_ERR();
                 RETURN_ERR(INVALID_INPUT, "unexpected parameter");
             }

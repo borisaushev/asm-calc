@@ -1,5 +1,5 @@
 ; решетка = 35
-PUSH 15 ; длинна стороны
+PUSH 25 ; длинна стороны
 POPREG HX
 
 PUSHREG HX

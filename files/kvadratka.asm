@@ -26,7 +26,7 @@ POPREG BX
 IN ; c
 POPREG CX
 
-; a == 0 - hlt
+; a == 0
 PUSHREG AX ; если a == 0 решаем линейное
 PUSH 0
 JE :2; TODO
