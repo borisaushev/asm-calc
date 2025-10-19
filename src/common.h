@@ -9,6 +9,10 @@
 #include <sys/stat.h>
 #include <filesystem>
 
+//TODO make hash for commands
+//TODO emmits
+//TODO make string labels
+//TODO add square brackets registers [AX]
 typedef enum errors {
     SUCCESS = 0,
     NULL_PTR,

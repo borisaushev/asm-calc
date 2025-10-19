@@ -271,3 +271,12 @@ error_t stackDestroy(stack_t* stack) {
 
     return SUCCESS;
 }
+
+long long strHash(const char *str) {
+    size_t hash = 5381;
+    for (size_t i = 0; i < strlen(str); i++) {
+        hash = ((hash << 5) + hash) + (size_t) str[i];
+    }
+
+    return hash;
+}

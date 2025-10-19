@@ -25,26 +25,26 @@ error_t initProcessor(processor_t* processor) {
 }
 
 error_t verifyProcessor(processor_t* processor) {
-#ifdef DEBUG
-    if (processor == NULL) {
-        RETURN_ERR(NULL_PTR, "processor is NULL");
-    }
+    #ifdef DEBUG
+        if (processor == NULL) {
+            RETURN_ERR(NULL_PTR, "processor is NULL");
+        }
 
-    dumpProcessor(processor);
-    STACK_VALID(&processor->valuesStack);
-    STACK_VALID(&processor->callStack);
+        dumpProcessor(processor);
+        STACK_VALID(&processor->valuesStack);
+        STACK_VALID(&processor->callStack);
 
-    if (processor->RAM == NULL) {
-        RETURN_ERR(NULL_PTR, "ram pointer is null");
-    }
+        if (processor->RAM == NULL) {
+            RETURN_ERR(NULL_PTR, "ram pointer is null");
+        }
 
-    if (processor->commandsCount > MAX_COMMANDS) {
-        RETURN_ERR(NULL_PTR, "reasonable commands count exceeded");
-    }
-    if (processor->CP > MAX_COMMANDS) {
-        RETURN_ERR(NULL_PTR, "current command index out of range");
-    }
-#endif
+        if (processor->commandsCount > MAX_COMMANDS) {
+            RETURN_ERR(NULL_PTR, "reasonable commands count exceeded");
+        }
+        if (processor->CP > MAX_COMMANDS) {
+            RETURN_ERR(NULL_PTR, "current command index out of range");
+        }
+    #endif
 
     return SUCCESS;
 }

@@ -3,6 +3,32 @@
 #include "compilerСommands.h"
 
 
+compilerCommandInfo_t COMPILER_COMMANDS_INFO[COMMANDS_COUNT] = {
+    {ADD,     "ADD",     noArgsCommand,  strHash("ADD")    },
+    {SUB,     "SUB",     noArgsCommand,  strHash("SUB")    },
+    {DIV,     "DIV",     noArgsCommand,  strHash("DIV")    },
+    {MUL,     "MUL",     noArgsCommand,  strHash("MUL")    },
+    {SQRT,    "SQRT",    noArgsCommand,  strHash("SQRT")   },
+    {OUT,     "OUT",     noArgsCommand,  strHash("OUT")    },
+    {IN,      "IN",      noArgsCommand,  strHash("IN")     },
+    {PUSH,    "PUSH",    pushCommand  ,  strHash("PUSH")   },
+    {POPREG,  "POPREG",  regParam     ,  strHash("POPREG") },
+    {PUSHREG, "PUSHREG", regParam     ,  strHash("PUSHREG")},
+    {JMP,     "JMP",     jumpCommand  ,  strHash("JMP")    },
+    {JB,      "JB",      jumpCommand  ,  strHash("JB")     },
+    {JBE,     "JBE",     jumpCommand  ,  strHash("JBE")    },
+    {JA,      "JA",      jumpCommand  ,  strHash("JA")     },
+    {JAE,     "JAE",     jumpCommand  ,  strHash("JAE")    },
+    {JE,      "JE",      jumpCommand  ,  strHash("JE")     },
+    {JNE,     "JNE",     jumpCommand  ,  strHash("JNE")    },
+    {CALL,    "CALL",    jumpCommand  ,  strHash("CALL")   },
+    {RET,     "RET",     noArgsCommand,  strHash("RET")    },
+    {PUSHMEM, "PUSHMEM", regParam     ,  strHash("PUSHMEM")},
+    {POPMEM,  "POPMEM",  regParam     ,  strHash("POPMEM") },
+    {DRAW,    "DRAW",    noArgsCommand,  strHash("DRAW")   },
+    {HLT,     "HLT",     noArgsCommand,  strHash("HLT")    },
+};
+
 error_t openListingAndByteFiles(FILE** targetListing, FILE** targetStreamBytes) {
     assert(targetListing);
     assert(targetStreamBytes);
@@ -51,21 +77,37 @@ static error_t parseLineAndCommand(compilerInfo_t *compilerInfo, int* isBlank) {
     return SUCCESS;
 }
 
-static error_t compileCommand(compilerInfo_t *compilerInfo, int* found) {
-    assert(compilerInfo);
-    assert(found);
+static int compareCommandInfo(const void* voidInfo1, const void* voidInfo2) {
+    const compilerCommandInfo_t* info1 = (const compilerCommandInfo_t*) voidInfo1;
+    const compilerCommandInfo_t* info2 = (const compilerCommandInfo_t*) voidInfo2;
 
-    for (int i = 0; i < COMMANDS_COUNT; i++) {
-        compilerCmdInfo_t curCommand = COMPILER_COMMANDS_INFO[i];
-        if (strcmp(compilerInfo->curCommand, curCommand.commandStr) == 0) {
-            compilerInfo->command = curCommand.command;
-            SAFE_CALL(curCommand.function(compilerInfo));
-
-            compilerInfo->arrIndex++;
-            *found = 1;
-            break;
-        }
+    long long dif = info1->hash - info2->hash;
+    if (dif == 0) {
+        return 0;
     }
+    if (dif < 0) {
+        return -1;
+    }
+    return 1;
+}
+
+static error_t compileCommand(compilerInfo_t *compilerInfo) {
+    assert(compilerInfo);
+
+    compilerCommandInfo_t desiredCommand = {.hash=strHash(compilerInfo->curCommand)};
+
+    compilerCommandInfo_t* curCommand = (compilerCommandInfo_t*)
+        bsearch(&desiredCommand, COMPILER_COMMANDS_INFO, COMMANDS_COUNT,
+                 sizeof(compilerCommandInfo_t), compareCommandInfo);
+    if (curCommand == NULL) {
+        PRINT_ASM_LINE_ERR();
+        RETURN_ERR(INVALID_INPUT, "unknown command");
+    }
+
+    compilerInfo->command = curCommand->command;
+    SAFE_CALL(curCommand->function(compilerInfo));
+
+    compilerInfo->arrIndex++;
 
     return SUCCESS;
 }
@@ -73,10 +115,30 @@ static error_t compileCommand(compilerInfo_t *compilerInfo, int* found) {
 error_t verifyCommandsArray() {
     for (int i = 0; i < COMMANDS_COUNT; i++) {
         if (COMPILER_COMMANDS_INFO[i].command != i) {
-            DPRINTF("verifyCommandsArray: invalid command at index %d\n", i);
+            printf("verifyCommandsArray: invalid command at index %d\n", i);
             RETURN_ERR(INVALID_INPUT, "commands array is invalid");
         }
     }
+
+    return SUCCESS;
+}
+
+static int compareCommandsInfo(const void* commandInfoVoid1, const void* commandInfoVoid2) {
+    const compilerCommandInfo_t* commandInfo1 = (const compilerCommandInfo_t*) commandInfoVoid1;
+    const compilerCommandInfo_t* commandInfo2 = (const compilerCommandInfo_t*) commandInfoVoid2;
+
+    return commandInfo1->hash - commandInfo2->hash > 0 ? 1 : -1;
+}
+
+static error_t sortCommandsByHashes() {
+    for (int i = 0; i < COMMANDS_COUNT; i++) {
+        if (COMPILER_COMMANDS_INFO[i].hash != strHash(COMPILER_COMMANDS_INFO[i].commandStr)) {
+            RETURN_ERR(INVALID_INPUT, "command hash doesnt match");
+        }
+    }
+
+    qsort(COMPILER_COMMANDS_INFO, COMMANDS_COUNT,
+          sizeof(compilerCommandInfo_t), compareCommandsInfo);
 
     return SUCCESS;
 }
@@ -85,6 +147,7 @@ error_t compile(compilerInfo_t* compilerInfo) {
     assert(compilerInfo);
 
     SAFE_CALL(verifyCommandsArray());
+    SAFE_CALL(sortCommandsByHashes());
 
     for (; compilerInfo->i < compilerInfo->text->lines_count; compilerInfo->i++) {
         int isBlank = 0;
@@ -97,13 +160,7 @@ error_t compile(compilerInfo_t* compilerInfo) {
             continue;
         }
 
-        int found = 0;
-        SAFE_CALL(compileCommand(compilerInfo, &found));
-
-        if (!found) {
-            PRINT_ASM_LINE_ERR();
-            RETURN_ERR(INVALID_INPUT, "invalid command");
-        }
+        SAFE_CALL(compileCommand(compilerInfo));
     }
 
     compilerInfo->size = compilerInfo->arrIndex;
@@ -116,7 +173,7 @@ static error_t makeListing(compilerInfo_t* compilerInfo) {
     fprintf(compilerInfo->listingFile, "%s V: %d\n", SIGNATURA, VERSION);
     for (size_t i = 0; i < compilerInfo->size; i++) {
         for (int ind = 0; ind < COMMANDS_COUNT; ind++) {
-            compilerCmdInfo_t curCommand = COMPILER_COMMANDS_INFO[ind];
+            compilerCommandInfo_t curCommand = COMPILER_COMMANDS_INFO[ind];
 
             if (compilerInfo->commandsArr[i] == curCommand.command) {
                 fprintf(compilerInfo->listingFile, "%03llu    ", i);
@@ -148,6 +205,10 @@ static void initCompilerInfo(pointer_array_buf_t *text, FILE *listingFile, compi
     compilerInfo->regVal = 'Z';
     initStack(&(compilerInfo->fixupStackIndex), MAX_LABELS);
     initStack(&(compilerInfo->fixupStackLabel), MAX_LABELS);
+
+    for (int i = 0; i < MAX_LABELS; i++) {
+        compilerInfo->labels[i] = -1;
+    }
 }
 
 error_t fixupLabels(compilerInfo_t* compilerInfo) {
@@ -173,29 +234,29 @@ error_t compileAsm(pointer_array_buf_t* text) {
 
     FILE* listingFile = NULL;
     FILE* targetStreamBytes = NULL;
-    SAFE_CALL(openListingAndByteFiles(&listingFile, &targetStreamBytes));
 
-    DPRINTF("lines count: %d\n", text->lines_count);
+    _TX_TRY {
+        _TX_CHECKED(openListingAndByteFiles(&listingFile, &targetStreamBytes));
+        DPRINTF("lines count: %d\n", text->lines_count);
 
-    compilerInfo_t compilerInfo = {};
-    initCompilerInfo(text, listingFile, &compilerInfo);
+        compilerInfo_t compilerInfo = {};
+        initCompilerInfo(text, listingFile, &compilerInfo);
 
-    for (int i = 0; i < MAX_LABELS; i++) {
-        compilerInfo.labels[i] = -1;
+        _TX_CHECKED(compile(&compilerInfo));
+        _TX_CHECKED(fixupLabels(&compilerInfo));
+
+        makeListing(&compilerInfo);
+        DPRINTF("the compiler meets its destiny\n");
+
+        fwrite(&SIGNATURA_BYTE, sizeof(int), 1, targetStreamBytes);
+        fwrite(&VERSION, sizeof(int), 1, targetStreamBytes);
+        fwrite(compilerInfo.commandsArr, sizeof(int), compilerInfo.size, targetStreamBytes);
+    } _TX_ENDTRY
+    _TX_CATCH {}
+    _TX_FINALLY {
+        fclose(listingFile);
+        fclose(targetStreamBytes);
     }
-
-    SAFE_CALL(compile(&compilerInfo));
-    SAFE_CALL(fixupLabels(&compilerInfo));
-
-    makeListing(&compilerInfo);
-    DPRINTF("the compiler meets its destiny\n");
-
-    fwrite(&SIGNATURA_BYTE, sizeof(int), 1, targetStreamBytes);
-    fwrite(&VERSION, sizeof(int), 1, targetStreamBytes);
-    fwrite(compilerInfo.commandsArr, sizeof(int), compilerInfo.size, targetStreamBytes);
-
-    fclose(listingFile);
-    fclose(targetStreamBytes);
 
     return SUCCESS;
 }

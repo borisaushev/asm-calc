@@ -56,4 +56,7 @@ error_t validateStack(const stack_t* stack);
 
 error_t stackDumpStream(const stack_t *stack, error_t validation, FILE* dumpFile,
                         const char *file, int line, const char *function);
+
+long long strHash(const char *str);
+
 #endif //ASM_CALC_STACK_H

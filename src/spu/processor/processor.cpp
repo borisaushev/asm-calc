@@ -59,7 +59,7 @@ static error_t runCommand(processor_t* processor, int *stopped) {
     return SUCCESS;
 }
 
-error_t verifyProcessorCommandsArray() {
+static error_t verifyProcessorCommandsArray() {
     for (int i = 0; i < COMMANDS_COUNT; i++) {
         if (PROCESSOR_COMMANDS_INFO[i].command != i) {
             RETURN_ERR(INVALID_INPUT, "processor commands array is invalid");

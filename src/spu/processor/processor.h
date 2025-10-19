@@ -5,8 +5,6 @@
 #include "stack.h"
 #include "struct/processorStruct.h"
 
-error_t verifyProcessorCommandsArray();
-
 error_t parseCommands(const char* filename, processor_t* processor);
 
 error_t funcOfTwo(stack_t* stack, int (*func) (int a, int b), const char* funcName);
