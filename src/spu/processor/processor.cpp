@@ -10,26 +10,32 @@ error_t parseCommands(const char* filename, processor_t* processor) {
     assert(filename);
 
     FILE* file = fopen(filename, "r");
-    if (!file) {
-        RETURN_ERR(FILE_NOT_READABLE, "could not open file");
+    _TX_TRY {
+        if (!file) {
+            FAIL_ERR(FILE_NOT_READABLE, "COULD NOT OPEN FILE");
+        }
+
+        int signatura = -1, version = -1;
+        fread(&signatura, sizeof(int), 1, file);
+        fread(&version, sizeof(int), 1, file);
+        if (signatura != SIGNATURA_BYTE) {
+            FAIL_ERR(INVALID_INPUT, "INVALID BYTE CODE SIGNATURE");
+        }
+        if (version != VERSION) {
+            FAIL_ERR(INVALID_INPUT, "INVALID BYTE CODE VERSION");
+        }
+
+        processor->commandsCount = fread(processor->commands, sizeof(int), MAX_COMMANDS, file);
+        if (processor->commandsCount > MAX_COMMANDS) {
+            FAIL_ERR(INVALID_INPUT, "MAX COMMANDS NUMBER EXCEEDED");
+        }
+    } _TX_ENDTRY
+    _TX_CATCH {
+    }
+    _TX_FINALLY {
+        fclose(file);
     }
 
-    int signatura = -1, version = -1;
-    fread(&signatura, sizeof(int), 1, file);
-    fread(&version, sizeof(int), 1, file);
-    if (signatura != SIGNATURA_BYTE) {
-        RETURN_ERR(INVALID_INPUT, "INVALID BYTE CODE SIGNATURE");
-    }
-    if (version != VERSION) {
-        RETURN_ERR(INVALID_INPUT, "INVALID BYTE CODE VERSION");
-    }
-
-    processor->commandsCount = fread(processor->commands, sizeof(int), MAX_COMMANDS, file);
-    if (processor->commandsCount > MAX_COMMANDS) {
-        RETURN_ERR(INVALID_INPUT, "MAX COMMANDS NUMBER EXCEEDED");
-    }
-
-    fclose(file);
     return SUCCESS;
 }
 

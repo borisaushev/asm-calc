@@ -64,14 +64,14 @@ static error_t readFile(const char *file_path, char** text, int* bytes_read) {
     *text = (char *) calloc((size_t) file_size, sizeof(char));
     *bytes_read = read(stream, *text, (unsigned int) file_size);
 
-    if (*bytes_read == -1) {
+    if (*bytes_read < 0) {
         PRINTERR("Could not read file %s with err: %s\n", file_path, strerror(errno));
         RETURN_ERR(FILE_NOT_READABLE, "Could not read file");
     }
     DPRINTF("Read %d bytes\n", *bytes_read);
     close(stream);
 
-    *text = (char *) realloc(*text,  *bytes_read + 2);
+    *text = (char *) realloc(*text,  (size_t) *bytes_read + 2);
     (*text)[*bytes_read] = (*text)[*bytes_read-1] == '\n' ? '\0' : '\n';
     (*text)[*bytes_read + 1] = '\0';
 

@@ -6,59 +6,16 @@ int main() {
     processor_t processor = {};
     initProcessor(&processor);
 
-    error_t callResult = parseCommands(BYTECODE_PATH, &processor);
-    if(callResult != SUCCESS) {
+    _TX_TRY {
+        _TX_CHECKED (parseCommands(BYTECODE_PATH, &processor))
+        _TX_CHECKED (verifyProcessor(&processor));
+        _TX_CHECKED (runCommands(&processor));
+    } _TX_ENDTRY
+    _TX_CATCH {
+    }
+    _TX_FINALLY {
         destroyProcessor(&processor);
-        return callResult;
     }
 
-    callResult = verifyProcessor(&processor);
-    if (callResult != SUCCESS) {
-        #ifdef DEBUG
-            dumpProcessor(&processor);
-            PRINTERR("Error while parsing commands");
-        #endif
-
-        destroyProcessor(&processor);
-        return callResult;
-    }
-
-    runCommands(&processor);
-
-    destroyProcessor(&processor);
+    return 0;
 }
-
-#if 0
-
-#include "common.h"
-#include "stack.h"
-#include "processor.h"
-
-int main() {
-stack_t valuesStack = {};
-initStack(&valuesStack, STACK_BASE_SIZE);
-
-stack_t callStack = {};
-initStack(&callStack, STACK_BASE_SIZE);
-
-processor_t processor = {};
-initProcessor(&processor, &valuesStack, &callStack);
-
-__TRY {
-error_t callResult = parseCommands(BYTECODE_PATH, &processor);
-if(callResult != SUCCESS) __FAIL (1);
-
-callResult = verifyProcessor(&processor);
-if (callResult != SUCCESS) __FAIL (2);
-
-runCommands(&processor);
-}
-
-__CLEANUP {
-destroyProcessor(&processor);
-}
-
-return __RESULT;
-
-}
-#endif
