@@ -33,52 +33,57 @@ error_t parseCommands(const char* filename, processor_t* processor) {
     return SUCCESS;
 }
 
-static error_t runCommand(processor_t* processor, int *found, int *stopped) {
-    SAFE_CALL(verifyProcessor(processor));
+static error_t runCommand(processor_t* processor, int *stopped) {
+    #ifdef DEBUG
+        SAFE_CALL(verifyProcessor(processor));
+    #endif
 
-    *found = 0;
+    if (processor->commands[processor->CP] < 0 || processor->commands[processor->CP] >= MAX_COMMANDS) {
+        RETURN_ERR(INVALID_INPUT, "invalid command number");
+    }
+
     *stopped = 0;
+    processorCmdInfo_t curCommand = PROCESSOR_COMMANDS_INFO[processor->commands[processor->CP]];
+    if (curCommand.command == HLT) {
+        *stopped = 1;
+        return SUCCESS;
+    }
+    SAFE_CALL(curCommand.function(processor));
+
+    return SUCCESS;
+}
+
+error_t verifyProcessorCommandsArray() {
     for (int i = 0; i < COMMANDS_COUNT; i++) {
-        processorCmdInfo_t curCommand = PROCESSOR_COMMANDS_INFO[i];
-        if (processor->commands[processor->CP] == curCommand.command) {
-            *found = 1;
-            if (curCommand.command == HLT) {
-                *stopped = 1;
-                return SUCCESS;
-            }
-            SAFE_CALL(curCommand.func(processor));
-            break;
+        if (PROCESSOR_COMMANDS_INFO[i].command != i) {
+            RETURN_ERR(INVALID_INPUT, "processor commands array is invalid");
         }
     }
 
     return SUCCESS;
 }
 
-error_t runCmnds(processor_t* processor) {
-    SAFE_CALL(verifyProcessor(processor));
+error_t runCommands(processor_t* processor) {
+    SAFE_CALL(verifyProcessorCommandsArray());
 
     #ifdef DEBUG
-        DPrintProcessor(processor);
         SAFE_CALL(verifyProcessor(processor));
+        DPrintProcessor(processor);
     #endif
 
-    int curCmnd = -1;
+    int curCommand = -1;
     int line = 1;
-    for (; curCmnd != HLT && processor->CP < processor->commandsCount; (processor->CP)++, line++) {
-        curCmnd = processor->commands[processor->CP];
+    for (; curCommand != HLT && processor->CP < processor->commandsCount; (processor->CP)++, line++) {
+        curCommand = processor->commands[processor->CP];
         int found = 0;
         int stopped = 0;
 
-        error_t result = runCommand(processor, &found, &stopped);
+        error_t result = runCommand(processor, &stopped);
         if (result != SUCCESS) {
-            PRINTERR("'%d' at index:%d\n", curCmnd, processor->CP);
+            PRINTERR("'%d' at index:%llu\n", curCommand, processor->CP);
             return result;
         }
 
-        if (!found) {
-            PRINTERR("UNKNOWN COMMAND '%d' at %s:%d\n", curCmnd, ASM_SRC_PATH, line + 1);
-            RETURN_ERR(INVALID_INPUT, "unknown command");
-        }
         if (stopped) {
             break;
         }

@@ -23,7 +23,7 @@ int main() {
         return callResult;
     }
 
-    runCmnds(&processor);
+    runCommands(&processor);
 
     destroyProcessor(&processor);
 }
@@ -51,7 +51,7 @@ if(callResult != SUCCESS) __FAIL (1);
 callResult = verifyProcessor(&processor);
 if (callResult != SUCCESS) __FAIL (2);
 
-runCmnds(&processor);
+runCommands(&processor);
 }
 
 __CLEANUP {

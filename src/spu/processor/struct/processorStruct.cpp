@@ -25,6 +25,7 @@ error_t initProcessor(processor_t* processor) {
 }
 
 error_t verifyProcessor(processor_t* processor) {
+#ifdef DEBUG
     if (processor == NULL) {
         RETURN_ERR(NULL_PTR, "processor is NULL");
     }
@@ -43,6 +44,7 @@ error_t verifyProcessor(processor_t* processor) {
     if (processor->CP > MAX_COMMANDS) {
         RETURN_ERR(NULL_PTR, "current command index out of range");
     }
+#endif
 
     return SUCCESS;
 }

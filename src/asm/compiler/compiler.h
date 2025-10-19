@@ -28,4 +28,6 @@ error_t compileAsm(pointer_array_buf_t* text);
 
 error_t compile(compilerInfo_t* compilerInfo);
 
+error_t verifyCommandsArray();
+
 #endif //SRC_UTILS_STACK_COMPILER_H

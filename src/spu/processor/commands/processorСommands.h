@@ -5,7 +5,7 @@
 
 typedef struct processorCmdInfo {
     const command_t command;
-    error_t (*func)(processor_t* processor);
+    error_t (*function)(processor_t* processor);
 } processorCmdInfo_t;
 
 // Arithmetic
@@ -43,14 +43,14 @@ error_t spuDraw(processor_t* processor);
 const processorCmdInfo_t PROCESSOR_COMMANDS_INFO[COMMANDS_COUNT] = {
     {ADD,     spuAdd},
     {SUB,     spuSub},
-    {MUL,     spuMul},
     {DIV,     spuDiv},
+    {MUL,     spuMul},
     {SQRT,    spuSqrt},
     {OUT,     spuOut},
-    {PUSH,    spuPush},
     {IN,      spuIn},
-    {PUSHREG, spuPushReg},
+    {PUSH,    spuPush},
     {POPREG,  spuPopReg},
+    {PUSHREG, spuPushReg},
     {JMP,     spuJmp},
     {JB,      spuJb},
     {JBE,     spuJbe},

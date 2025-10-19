@@ -70,8 +70,22 @@ static error_t compileCommand(compilerInfo_t *compilerInfo, int* found) {
     return SUCCESS;
 }
 
+error_t verifyCommandsArray() {
+    for (int i = 0; i < COMMANDS_COUNT; i++) {
+        if (COMPILER_COMMANDS_INFO[i].command != i) {
+            DPRINTF("verifyCommandsArray: invalid command at index %d\n", i);
+            RETURN_ERR(INVALID_INPUT, "commands array is invalid");
+        }
+    }
+
+    return SUCCESS;
+}
+
 error_t compile(compilerInfo_t* compilerInfo) {
     assert(compilerInfo);
+
+    SAFE_CALL(verifyCommandsArray());
+
     compilerInfo->arrIndex = 0;
     compilerInfo->i = 0;
     compilerInfo->unknownLabels = 0;
@@ -111,7 +125,7 @@ static error_t makeListing(compilerInfo_t* compilerInfo) {
             if (compilerInfo->commandsArr[i] == curCommand.command) {
                 fprintf(compilerInfo->listingFile, "%03llu    ", i);
                 if (curCommand.function == noArgsCommand) {
-                    fprintf(compilerInfo->listingFile, "%.8d    ", compilerInfo->commandsArr[i]);
+                    fprintf(compilerInfo->listingFile, "%.3d         ", compilerInfo->commandsArr[i]);
                 }
                 else {
                     fprintf(compilerInfo->listingFile, "%.3d  %.3d    ", compilerInfo->commandsArr[i], compilerInfo->commandsArr[i + 1]);

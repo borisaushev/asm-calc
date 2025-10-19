@@ -23,35 +23,35 @@ typedef enum errors {
 } error_t;
 
 typedef enum commands {
-    ADD = 1,
-    SUB = 2,
-    DIV = 3,
-    MUL = 4,
-    SQRT = 5,
-    OUT = 6,
-    IN = 7, // считать с консоли в стек
-    PUSH = 8, // в стек
-    POPREG = 9, // POPREG AX - записать в регистр значение stackPop()
-    PUSHREG = 10, // PUSHREG AX - сделать push() в стек значения AX
-    JMP = 11,
-    JB = 12,
-    JBE = 13,
-    JA = 14,
-    JAE = 15,
-    JE = 16,
-    JNE = 17,
-    CALL = 18,
-    RET = 19,
-    PUSHMEM = 20,
-    POPMEM = 21,
-    DRAW = 22,
-    HLT = 32,
+    ADD = 0,
+    SUB = 1,
+    DIV = 2,
+    MUL = 3,
+    SQRT = 4,
+    OUT = 5,
+    IN = 6, // считать с консоли в стек
+    PUSH = 7, // в стек
+    POPREG = 8, // POPREG AX - записать в регистр значение stackPop()
+    PUSHREG = 9, // PUSHREG AX - сделать push() в стек значения AX
+    JMP = 10,
+    JB = 11,
+    JBE = 12,
+    JA = 13,
+    JAE = 14,
+    JE = 15,
+    JNE = 16,
+    CALL = 17,
+    RET = 18,
+    PUSHMEM = 19,
+    POPMEM = 20,
+    DRAW = 21,
+    HLT = 22,
 } command_t;
 const int COMMANDS_COUNT = 23;
 
 // const char* const ASM_SRC_PATH = "..\\files\\factorial.asm";
-const char* const ASM_SRC_PATH = "..\\files\\kvadratka.asm";
-// const char* const ASM_SRC_PATH = "..\\files\\circle.asm";
+// const char* const ASM_SRC_PATH = "..\\files\\kvadratka.asm";
+const char* const ASM_SRC_PATH = "..\\files\\circle.asm";
 const char* const LISTING_PATH = "..\\files\\listing.lst";
 const char* const BYTECODE_PATH = "..\\files\\bytecode.bbc";
 
@@ -65,7 +65,8 @@ const int MAX_COMMANDS = 1024;
 const int MAX_LABELS = 10;
 
 const int REGISTER_SIZE = 10;
-const int RAM_SIZE = 25*25;
+const int RAM_SQUARE_LENGTH = 100;
+const int RAM_SIZE = RAM_SQUARE_LENGTH * RAM_SQUARE_LENGTH;
 
 const int STACK_BASE_SIZE = 100;
 

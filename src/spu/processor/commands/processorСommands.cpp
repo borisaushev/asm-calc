@@ -379,7 +379,7 @@ error_t spuDraw(processor_t* processor) {
     for (int i = 1; i <= RAM_SIZE; i++) {
         char ch = (char) processor->RAM[i - 1];
         printf("|%c| ", ch == 0 ? ' ' : ch);
-        if (i % (int) sqrt(RAM_SIZE) == 0) {
+        if (i % RAM_SQUARE_LENGTH == 0) {
             printf("\n");
         }
     }
