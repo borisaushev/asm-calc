@@ -86,10 +86,6 @@ error_t compile(compilerInfo_t* compilerInfo) {
 
     SAFE_CALL(verifyCommandsArray());
 
-    compilerInfo->arrIndex = 0;
-    compilerInfo->i = 0;
-    compilerInfo->unknownLabels = 0;
-
     for (; compilerInfo->i < compilerInfo->text->lines_count; compilerInfo->i++) {
         int isBlank = 0;
         SAFE_CALL(parseLineAndCommand(compilerInfo, &isBlank));
@@ -146,12 +142,30 @@ static void initCompilerInfo(pointer_array_buf_t *text, FILE *listingFile, compi
     compilerInfo->text = text;
     compilerInfo->command = HLT;
     compilerInfo->size = 0;
-    compilerInfo->arrIndex = SIGNATURA_SIZE;
+    compilerInfo->arrIndex = 0;
     compilerInfo->i = 0;
     compilerInfo->line = NULL;
-    compilerInfo->unknownLabels = 0;
     compilerInfo->regVal = 'Z';
-    initStack(&(compilerInfo->fixupStack), MAX_LABELS);
+    initStack(&(compilerInfo->fixupStackIndex), MAX_LABELS);
+    initStack(&(compilerInfo->fixupStackLabel), MAX_LABELS);
+}
+
+error_t fixupLabels(compilerInfo_t* compilerInfo) {
+    while (compilerInfo->fixupStackIndex.elementCount != 0) {
+        int curIndex = -1;
+        SAFE_CALL(stackPop(&compilerInfo->fixupStackIndex, &curIndex));
+
+        int curLabelIndex = -1;
+        SAFE_CALL(stackPop(&compilerInfo->fixupStackLabel, &curLabelIndex));
+
+        if (curIndex == POISON || curLabelIndex == POISON) {
+            RETURN_ERR(INVALID_INPUT, "fixupLabels: invalid index");
+        }
+
+        compilerInfo->commandsArr[curIndex] = compilerInfo->labels[curLabelIndex];
+    }
+
+    return SUCCESS;
 }
 
 error_t compileAsm(pointer_array_buf_t* text) {
@@ -171,14 +185,7 @@ error_t compileAsm(pointer_array_buf_t* text) {
     }
 
     SAFE_CALL(compile(&compilerInfo));
-    if (compilerInfo.unknownLabels != 0) {
-        compilerInfo.unknownLabels = 0;
-        SAFE_CALL(compile(&compilerInfo));
-
-        if (compilerInfo.unknownLabels != 0) {
-            RETURN_ERR(INVALID_INPUT, "unknown labels");
-        }
-    }
+    SAFE_CALL(fixupLabels(&compilerInfo));
 
     makeListing(&compilerInfo);
     DPRINTF("the compiler meets its destiny\n");

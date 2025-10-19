@@ -7,7 +7,7 @@
 
 typedef int element_t;
 # define REG "%d"
-const int POISON = 777;
+const int POISON = -777777777;
 const char CANARRAY = 'W';
 
 typedef struct stack {

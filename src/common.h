@@ -55,7 +55,7 @@ const char* const ASM_SRC_PATH = "..\\files\\circle.asm";
 const char* const LISTING_PATH = "..\\files\\listing.lst";
 const char* const BYTECODE_PATH = "..\\files\\bytecode.bbc";
 
-const int VERSION = 23;
+const int VERSION = 24;
 const char* const SIGNATURA = "BB";
 const int SIGNATURA_BYTE = 0xBB;
 const int SIGNATURA_SIZE = 2;

@@ -17,10 +17,10 @@ typedef struct compilerInfo {
     int i;
     char* line;
     int labels[MAX_LABELS];
-    int unknownLabels;
     char regVal;
     char curCommand[MAX_COMMAND_LENGTH];
-    stack_t fixupStack;
+    stack_t fixupStackIndex;
+    stack_t fixupStackLabel;
 } compilerInfo_t;
 
 error_t openListingAndByteFiles(FILE** targetPr, FILE** targetStreamBytes);
@@ -28,6 +28,8 @@ error_t openListingAndByteFiles(FILE** targetPr, FILE** targetStreamBytes);
 error_t compileAsm(pointer_array_buf_t* text);
 
 error_t compile(compilerInfo_t* compilerInfo);
+
+error_t fixupLabels(compilerInfo_t* compilerInfo);
 
 error_t verifyCommandsArray();
 

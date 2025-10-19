@@ -3,7 +3,7 @@
 #include "compiler.h"
 #include "line_reader.h"
 #include "stack.h"
-#include "commands/processorСommands.h"
+#include "commands/processorCommands.h"
 #include "struct/processorStruct.h"
 
 error_t parseCommands(const char* filename, processor_t* processor) {
@@ -72,10 +72,8 @@ error_t runCommands(processor_t* processor) {
     #endif
 
     int curCommand = -1;
-    int line = 1;
-    for (; curCommand != HLT && processor->CP < processor->commandsCount; (processor->CP)++, line++) {
+    for (; curCommand != HLT && processor->CP < processor->commandsCount; (processor->CP)++) {
         curCommand = processor->commands[processor->CP];
-        int found = 0;
         int stopped = 0;
 
         error_t result = runCommand(processor, &stopped);

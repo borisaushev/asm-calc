@@ -105,7 +105,8 @@ error_t jumpCommand(compilerInfo_t* compilerInfo) {
         compilerInfo->commandsArr[compilerInfo->arrIndex] = compilerInfo->labels[label];
 
         if (compilerInfo->labels[label] == -1) {
-            compilerInfo->unknownLabels += 1;
+            stackPush(&compilerInfo->fixupStackIndex, (int) compilerInfo->arrIndex);
+            stackPush(&compilerInfo->fixupStackLabel, label);
         }
 
         return SUCCESS;
