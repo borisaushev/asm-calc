@@ -61,8 +61,8 @@ static error_t readFile(const char *file_path, char** text, int* bytes_read) {
         PRINTERR("Could not open file %s\n", file_path);
         RETURN_ERR(FILE_NOT_FOUND, "Could not open file");
     }
-    *text = (char *) calloc(file_size, sizeof(char));
-    *bytes_read = read(stream, *text, file_size);
+    *text = (char *) calloc((size_t) file_size, sizeof(char));
+    *bytes_read = read(stream, *text, (unsigned int) file_size);
 
     if (*bytes_read == -1) {
         PRINTERR("Could not read file %s with err: %s\n", file_path, strerror(errno));

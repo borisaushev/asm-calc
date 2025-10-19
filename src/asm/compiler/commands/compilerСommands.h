@@ -8,7 +8,7 @@
     BEGIN \
         PRINTERR("AT LINE %d\nin file: ", compilerInfo->i + 1); \
         PRINTERR(ASM_SRC_PATH); \
-        PRINTERR(":%d\n\n", compilerInfo->i+1); \
+        PRINTERR(":%d\n\n", compilerInfo->i + 1); \
     END
 
 typedef struct compilerCmdInfo {

@@ -3,14 +3,14 @@
 #include "compilerСommands.h"
 
 
-error_t openListingAndByteFiles(FILE** targetPr, FILE** targetStreamBytes) {
-    assert(targetPr);
+error_t openListingAndByteFiles(FILE** targetListing, FILE** targetStreamBytes) {
+    assert(targetListing);
     assert(targetStreamBytes);
 
-    *targetPr = fopen(LISTING_PATH, "wb");
+    *targetListing = fopen(LISTING_PATH, "wb");
     *targetStreamBytes = fopen(BYTECODE_PATH, "wb");
 
-    if (!*targetStreamBytes || !*targetPr) {
+    if (!*targetStreamBytes || !*targetListing) {
         RETURN_ERR(FILE_NOT_FOUND, "could not open file");
     }
 
@@ -171,8 +171,8 @@ error_t fixupLabels(compilerInfo_t* compilerInfo) {
 error_t compileAsm(pointer_array_buf_t* text) {
     assert(text);
 
-    FILE *listingFile = NULL;
-    FILE *targetStreamBytes = NULL;
+    FILE* listingFile = NULL;
+    FILE* targetStreamBytes = NULL;
     SAFE_CALL(openListingAndByteFiles(&listingFile, &targetStreamBytes));
 
     DPRINTF("lines count: %d\n", text->lines_count);

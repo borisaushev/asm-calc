@@ -23,7 +23,7 @@ typedef struct compilerInfo {
     stack_t fixupStackLabel;
 } compilerInfo_t;
 
-error_t openListingAndByteFiles(FILE** targetPr, FILE** targetStreamBytes);
+error_t openListingAndByteFiles(FILE** targetListing, FILE** targetStreamBytes);
 
 error_t compileAsm(pointer_array_buf_t* text);
 
