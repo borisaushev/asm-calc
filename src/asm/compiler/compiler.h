@@ -20,6 +20,7 @@ typedef struct compilerInfo {
     int unknownLabels;
     char regVal;
     char curCommand[MAX_COMMAND_LENGTH];
+    stack_t fixupStack;
 } compilerInfo_t;
 
 error_t openListingAndByteFiles(FILE** targetPr, FILE** targetStreamBytes);

@@ -33,7 +33,17 @@ POPREG BX
 
     ;ищем y - y0
     PUSHREG AX
+    PUSH 7
+    MUL
+    PUSH 8
+    DIV
+
+
     PUSHREG FX
+    PUSH 7
+    MUL
+    PUSH 8
+    DIV
     SUB ; y - y0
 
     POPREG IX

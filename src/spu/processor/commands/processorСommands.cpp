@@ -46,10 +46,10 @@ error_t spuDiv(processor_t* processor) {
         RETURN_ERR(INVALID_INPUT, "stack is empty");
     }
 
-    int result = value2 / value1;
     if (value1 == 0) {
         RETURN_ERR(INVALID_INPUT, "division by zero");
     }
+    int result = value2 / value1;
     DPRINTF("DIV: %d\n", result);
     SAFE_CALL(stackPush(&processor->valuesStack, result));
 

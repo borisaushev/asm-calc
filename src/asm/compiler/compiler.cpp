@@ -141,16 +141,17 @@ static error_t makeListing(compilerInfo_t* compilerInfo) {
     return SUCCESS;
 }
 
-static void initCompilerInfo(pointer_array_buf_t *text, FILE *listingFile, compilerInfo_t &compilerInfo) {
-    compilerInfo.listingFile = listingFile;
-    compilerInfo.text = text;
-    compilerInfo.command = HLT;
-    compilerInfo.size = 0;
-    compilerInfo.arrIndex = SIGNATURA_SIZE;
-    compilerInfo.i = 0;
-    compilerInfo.line = NULL;
-    compilerInfo.unknownLabels = 0;
-    compilerInfo.regVal = 'Z';
+static void initCompilerInfo(pointer_array_buf_t *text, FILE *listingFile, compilerInfo_t* compilerInfo) {
+    compilerInfo->listingFile = listingFile;
+    compilerInfo->text = text;
+    compilerInfo->command = HLT;
+    compilerInfo->size = 0;
+    compilerInfo->arrIndex = SIGNATURA_SIZE;
+    compilerInfo->i = 0;
+    compilerInfo->line = NULL;
+    compilerInfo->unknownLabels = 0;
+    compilerInfo->regVal = 'Z';
+    initStack(&(compilerInfo->fixupStack), MAX_LABELS);
 }
 
 error_t compileAsm(pointer_array_buf_t* text) {
@@ -163,7 +164,7 @@ error_t compileAsm(pointer_array_buf_t* text) {
     DPRINTF("lines count: %d\n", text->lines_count);
 
     compilerInfo_t compilerInfo = {};
-    initCompilerInfo(text, listingFile, compilerInfo);
+    initCompilerInfo(text, listingFile, &compilerInfo);
 
     for (int i = 0; i < MAX_LABELS; i++) {
         compilerInfo.labels[i] = -1;
