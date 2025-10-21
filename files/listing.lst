@@ -1,0 +1,26 @@
+BB V: 24
+000    006         IN
+001    008  000    POPREG
+003    009  000    PUSHREG
+005    007  000    PUSH
+007    012  042    JBE
+009    007  001    PUSH
+011    008  001    POPREG
+013    017  019    CALL
+015    009  001    PUSHREG
+017    005         OUT
+018    022         HLT
+019    009  000    PUSHREG
+021    007  001    PUSH
+023    012  041    JBE
+025    009  000    PUSHREG
+027    009  000    PUSHREG
+029    007  001    PUSH
+031    001         SUB
+032    008  000    POPREG
+034    017  019    CALL
+036    009  001    PUSHREG
+038    003         MUL
+039    008  001    POPREG
+041    018         RET
+042    022         HLT

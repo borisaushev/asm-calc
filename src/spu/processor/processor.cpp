@@ -31,7 +31,7 @@ error_t parseCommands(const char* filename, processor_t* processor) {
         }
     } _TX_ENDTRY
     _TX_CATCH {
-    }
+    } _TX_ENDCATCH
     _TX_FINALLY {
         fclose(file);
     }

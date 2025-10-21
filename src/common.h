@@ -121,7 +121,8 @@ const int STACK_BASE_SIZE = 100;
 
 #define      _TX_TRY                  error_t __tx_error = SUCCESS; { goto __tx_try; } __tx_try: {
 #define      _TX_CHECKED( cmd )       { if ((__tx_error = (cmd)) != SUCCESS) {goto __tx_catch;}}
-#define      _TX_CATCH                goto __tx_finally; __tx_catch:
+#define      _TX_CATCH                goto __tx_finally; __tx_catch: {
+#define      _TX_ENDCATCH             return __tx_error;}
 #define      _TX_FAIL( error_code )   { __tx_error = error_code; goto __tx_catch; }
 #define      _TX_FINALLY              __tx_finally:
 #define      _TX_ENDTRY               }

@@ -252,7 +252,8 @@ error_t compileAsm(pointer_array_buf_t* text) {
         fwrite(&VERSION, sizeof(int), 1, targetStreamBytes);
         fwrite(compilerInfo.commandsArr, sizeof(int), compilerInfo.size, targetStreamBytes);
     } _TX_ENDTRY
-    _TX_CATCH {}
+    _TX_CATCH {
+    } _TX_ENDCATCH
     _TX_FINALLY {
         fclose(listingFile);
         fclose(targetStreamBytes);
